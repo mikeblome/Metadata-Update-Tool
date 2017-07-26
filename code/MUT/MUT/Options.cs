@@ -37,7 +37,7 @@ Options:
         }
         public string output
         {
-            get { return (null == arguments["--file"]) ? null : arguments["--file"].ToString(); }
+            get { return (null == arguments["--output"]) ? null : arguments["--output"].ToString(); }
         }
 
         public Options(string[] args)
