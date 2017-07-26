@@ -52,6 +52,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="abstract-classes2.md" />
+    <None Include="abstract-classes3.md" />
+    <None Include="catlmodule-class.md" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
