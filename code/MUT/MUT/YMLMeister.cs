@@ -67,6 +67,19 @@ namespace MUT
         /// <param name="file"></param>
         /// <param name="tag"></param>
         /// <returns></returns>
+        public string GetTagAndValue(ref string file, int beg)
+        {
+            int end = GetTagValueEndPos(ref file, beg);
+            return file.Substring(beg, end - beg);
+        }
+
+
+        /// <summary>
+        ///     Gets the tag itself, and its value
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="tag"></param>
+        /// <returns></returns>
         public string GetTagAndValue(ref string file, ref string tag)
         {
             int beg = GetTagStartPos(ref file, ref tag);
@@ -121,7 +134,6 @@ namespace MUT
             return file.Substring(lineEnd, file.Length - lineEnd);
         }
 
-
         /// <summary>
         ///     
         /// </summary>
@@ -174,7 +186,12 @@ namespace MUT
             }
 
             // yes, then sanity check: is the next line a new tag?
-            string nextLine = file.Substring(end + 1, file.IndexOf("\n", end + 1));
+            int idx = file.IndexOf("\n", end + 1);
+            if (idx == -1)
+            {
+                return false; // we must be at the end of the block
+            }
+            string nextLine = file.Substring(end + 1, idx - end);
             if (Regex.IsMatch(nextLine, @"^[A_Za-z0-9\._-]+:"))
             {
                 // tag is a single value 
@@ -183,16 +200,23 @@ namespace MUT
 
             return true;
         }
+
+        /// <summary>
+        ///     Reads a YML block into a dictionary. For use in mdextract. Compresses multi-line
+        ///     values into a single comma-separated string.
+        /// </summary>
+        /// <param name="yml"></param>
+        /// <returns></returns>
         public static Dictionary<string, string> ParseYML(string yml)
         {
             var d = new Dictionary<string, string>();
             var lines = yml.Split('\n');
 
             // Theoretically matches only keys, not values. Needs good tests.
-            Regex rgx = new Regex(@"[A-Za-z\._]+:");
+            Regex rgx = new Regex(@"^[A-Za-z\._]+:");
 
             // Store current key for cases where we need to iterate over multiline values.
-            // POssibly not needed.
+            // Possibly not needed.
             string currentKey = "";
 
             // For use in multiline values. All multiline values get enclosed in brackets, even if there is only
@@ -251,6 +275,80 @@ namespace MUT
             }
             return d;
         }
+
+        public List<Tuple<string, List<string>>> ParseYML2(ref string file)
+        {
+            var yml = GetYmlBlock(ref file);
+            var tags = GetAllTags(yml);
+            var tagList = new List<Tuple<string, List <string>>>();
+            foreach (var t in tags)
+            {
+                tagList.Add(MakeTupleFromTag(t));
+            }
+            return tagList;
+        }
+
+        public Tuple<string, List<string>> MakeTupleFromTag(string tagAndVal)
+        {
+          //  string s = m.Value;
+            var parts = tagAndVal.Split('\n');
+            var tagLine = parts[0].Split(':');
+            string tagName = tagLine[0];
+            string tagVal = tagLine[1].Trim();
+            List<string> vals = new List<string>();
+            if (tagVal.Length > 0)
+            {
+                if (tagVal.StartsWith("[") && tagVal.EndsWith("]") && tagVal.Length > 2)
+                {
+                    // multi values in a single comma-separated string
+                    string temp = tagVal.TrimStart('[');
+                    temp = temp.TrimEnd(']');
+                    var valParts = temp.Split(',');
+                    foreach (var p in valParts)
+                    {
+                        vals.Add(p);
+                    }
+                }
+                else
+                    vals.Add(tagVal);
+            }
+            else
+            {
+                //dash formatted each val on separate line
+                // start on 1 because line zero was the tag itself
+                for (int i = 1; i < parts.Length; ++i)
+                {
+                    vals.Add(parts[i].Trim());
+                }
+            }
+            return new Tuple<string, List<string>>(tagName, vals);
+        }
+
+        public List<string> GetAllTags(string yml)
+        {
+            
+             var matches = Regex.Matches(yml, @"[A-Za-z\._]+:", RegexOptions.Multiline);
+            List<string> tags = new List<string>();
+            foreach (Match m in matches)
+            {
+                tags.Add(GetTagAndValue(ref yml, m.Index));
+            }
+
+            return tags;
+           // return Regex.Matches(yml, @"^([A-Za-z\._]+?:[\s\S]+?)\n[\w-]", RegexOptions.Multiline);
+        }
+
+        /// <summary>
+        /// Gets a yml block from file including opening and closing "---" markers
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public string GetYmlBlock(ref string file)
+        {
+            return file.Substring(0, file.IndexOf("---", 4) + 3);
+        }
+
+
         #endregion
 
         #region CRUD operations
@@ -271,8 +369,35 @@ namespace MUT
             var old = GetTagAndValue(ref file, ref tag);
             var parts = old.Split(':');
             StringBuilder sb = new StringBuilder(pre);
-            sb.Append(parts[0]).Append(": ").Append(newVal).Append("\r\n");
+            sb.Append(parts[0]).Append(": ").Append(newVal)
+                .Append("\r\n").Append(suf);
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Adds a new tag and value to the metadata section. 
+        /// TODO--Place tag is proper ordered position in hte metadatablock.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="tag"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public string CreateTag(ref string file, string tag, string value)
+        {
+            // skip over opening "---" and find the next one
+            int metadataEndPos = file.IndexOf("---", 4);
+
+            string pre = file.Substring(0, metadataEndPos);
+            string suf = file.Substring(metadataEndPos, file.Length - metadataEndPos);
+            StringBuilder sb = new StringBuilder(pre);
+            sb.Append(tag).Append(": ").Append(value);
+                sb.Append("\r\n").Append(suf);
+            return sb.ToString();
+        }
+
+        public string UpdateMultiValue(ref string file, ref string tag, string newVal)
+        {
+            return "";
         }
         #endregion
     }

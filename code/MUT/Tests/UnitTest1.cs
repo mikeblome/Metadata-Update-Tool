@@ -164,6 +164,8 @@ namespace Tests
             Debug.WriteLine("<---output ends here");
             Assert.AreEqual(result.Length, 207);
         }
+
+        [TestMethod]
         public void TestReplaceSingleLine()
         {
             YMLMeister y = new YMLMeister();
@@ -177,7 +179,92 @@ namespace Tests
             Debug.WriteLine("<---output ends here");
         //    Assert.AreEqual(result.Length, 207);
         }
+        [TestMethod]
+        public void TestCreateTag()
+        {
+            YMLMeister y = new YMLMeister();
+            string f = @"../../abstract-classes3.md";
+            string content = File.ReadAllText(f);
+            string tag = "ms.ImNew";
+            string newVal = "\"new Value\"";
+            Debug.WriteLine("-----Create ms.ImNew-----");
+            var result = y.CreateTag(ref content, tag, newVal);
+            int i = result.Length;
+            Debug.Write(result);
+            Debug.WriteLine("<---output ends here");
+            //    Assert.AreEqual(result.Length, 207);
+        }
 
+
+        [TestMethod]
+        public void TestGetYmlBlock()
+        {
+            YMLMeister y = new YMLMeister();
+            string f = @"../../abstract-classes3.md";
+            string content = File.ReadAllText(f);
+            string yml = y.GetYmlBlock(ref content);
+            Debug.WriteLine("-----Get YML Block-----");
+            int i = yml.Length;
+            Debug.Write(yml);
+            Debug.WriteLine("<---output ends here");
+            //    Assert.AreEqual(result.Length, 207);
+        }
+
+        [TestMethod]
+        public void TestGetAllTags()
+        {
+            YMLMeister y = new YMLMeister();
+            string f = @"../../abstract-classes3.md";
+            string content = File.ReadAllText(f);
+            string yml = y.GetYmlBlock(ref content);
+            Debug.WriteLine("-----Get All tags-----");
+            var tags = y.GetAllTags(yml);
+            Debug.WriteLine("<---output ends here");
+            foreach (string s in tags)
+            {
+                Debug.WriteLine(s);
+            }
+            //    Assert.AreEqual(result.Length, 207);
+        }
+
+        [TestMethod]
+        public void TestMakeTupleFromTagSingle()
+        {
+            YMLMeister y = new YMLMeister();
+            string f = @"../../abstract-classes3.md";
+            string content = File.ReadAllText(f);
+            string yml = y.GetYmlBlock(ref content);
+            Debug.WriteLine("-----Get All tags-----");
+            var matches = y.GetAllTags(yml);
+            Debug.WriteLine("<---output ends here");
+            foreach (string m in matches)
+            {
+                var t = y.MakeTupleFromTag(m);
+                Debug.WriteLine("tag name is: " + t.Item1);
+                foreach (var i in t.Item2)
+                {
+                    Debug.WriteLine("   " + i);
+                }
+            }
+            //    Assert.AreEqual(result.Length, 207);
+        }
+
+        [TestMethod]
+        public void TestParseYml2()
+        {
+            YMLMeister y = new YMLMeister();
+            string f = @"../../abstract-classes3.md";
+            var content = File.ReadAllText(f);
+            var result = y.ParseYML2(ref content);
+            foreach (var v in result)
+            {
+                Debug.WriteLine(v.Item1);
+                foreach (var v2 in v.Item2)
+                {
+                    Debug.WriteLine("   " + v2);
+                }
+            }
+        }
     }
 }
 
