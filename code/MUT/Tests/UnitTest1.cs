@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -18,7 +19,7 @@ namespace Tests
             string content = File.ReadAllText(f);
             YMLMeister y = new YMLMeister();
             string tag = "title";
-            int i = y.GetTagStartPos(ref content, ref tag);
+            int i = y.GetTagStartPos(content, tag);
             Assert.AreEqual(i, 5);
         }
 
@@ -29,7 +30,7 @@ namespace Tests
             string f = @"../../abstract-classes-cpp.md";
             string content = File.ReadAllText(f);
             string tag = "dev_langs";
-            Assert.IsTrue(y.IsMultilineValue(ref content, ref tag));
+            Assert.IsTrue(y.IsMultilineValue(content, tag));
         }
 
         [TestMethod]
@@ -39,7 +40,7 @@ namespace Tests
             string f = @"../../abstract-classes-cpp.md";
             string content = File.ReadAllText(f);
             string tag = "ms.assetid";
-            Assert.IsFalse(y.IsMultilineValue(ref content, ref tag));
+            Assert.IsFalse(y.IsMultilineValue(content, tag));
         }
 
         [TestMethod]
@@ -51,7 +52,7 @@ namespace Tests
             string tag = "ms.custom";
             string expected = "---\r\ntitle: \"Abstract Classes (C++) | Microsoft Docs\"\r\n";
 
-            string result = y.GetPrefix(ref content, ref tag);
+            string result = y.GetPrefix(content, tag);
 
             int x = String.Compare(expected, result);
             int xx = expected.Length;
@@ -68,8 +69,8 @@ namespace Tests
             string f = @"../../abstract-classes2.md";
             string content = File.ReadAllText(f);
             string tag = "ms.author";
-            int startPos = y.GetTagStartPos(ref content, ref tag);
-            int endPos = y.GetTagValueEndPos(ref content, startPos);
+            int startPos = y.GetTagStartPos(content, tag);
+            int endPos = y.GetTagValueEndPos(content, startPos);
             string s = content.Substring(0, endPos);
             Assert.AreEqual(endPos, 112);
         }
@@ -81,11 +82,11 @@ namespace Tests
             string f = @"../../abstract-classes2.md";
             string content = File.ReadAllText(f);
             string tag = "translation.priority.ht";
-            string val = y.GetTagAndValue(ref content, ref tag);
+            string val = y.GetTagAndValue(content, tag);
             Debug.Write(val);
 
             tag = "ms.author";
-            val = y.GetTagAndValue(ref content, ref tag);
+            val = y.GetTagAndValue(content, tag);
             Debug.Write(val);
         }
 
@@ -97,7 +98,7 @@ namespace Tests
             string f = @"../../abstract-classes2.md";
             string content = File.ReadAllText(f);
             string tag = "translation.priority.ht";
-            string temp = y.GetValue(ref content, ref tag);
+            string temp = y.GetValue(content, tag);
             Debug.WriteLine("-------TestGetValue----------");
             Debug.Write(temp);
             Debug.WriteLine("-------");
@@ -109,8 +110,8 @@ namespace Tests
             string f = @"../../abstract-classes2.md";
             string content = File.ReadAllText(f);
             string tag = "translation.priority.ht";
-            int startPos = y.GetTagStartPos(ref content, ref tag);
-            int endPos = y.GetTagValueEndPos(ref content, startPos);
+            int startPos = y.GetTagStartPos(content, tag);
+            int endPos = y.GetTagValueEndPos(content, startPos);
             string s = content.Substring(startPos, endPos - startPos);
             Assert.AreEqual(endPos, 326);
         }
@@ -123,7 +124,7 @@ namespace Tests
             string content = File.ReadAllText(f);
             string tag = "ms.author";
             Debug.WriteLine("-----Suffix for ms.author-----");
-            string result = y.GetSuffix(ref content, ref tag);
+            string result = y.GetSuffix(content, tag);
             Debug.Write(result);
             Debug.WriteLine("-------------");
         }
@@ -140,9 +141,9 @@ namespace Tests
             string content = File.ReadAllText(f);
             string tag = "ms.author";
             Debug.WriteLine("-----Prefix tag suffix for ms.author-----");
-            string prefix = y.GetPrefix(ref content, ref tag);
-            string tagAndval = y.GetTagAndValue(ref content, ref tag);
-            string suffix = y.GetSuffix(ref content, ref tag);
+            string prefix = y.GetPrefix(content, tag);
+            string tagAndval = y.GetTagAndValue(content, tag);
+            string suffix = y.GetSuffix(content, tag);
             StringBuilder sb = new StringBuilder();
             sb.Append(prefix).Append(tagAndval).Append(suffix);
             Debug.Assert(sb.ToString().Length == content.Length);
@@ -158,12 +159,14 @@ namespace Tests
             string content = File.ReadAllText(f);
             string tag = "ms.author";
             Debug.WriteLine("-----Delete ms.author-----");
-            var result = y.DeleteTagAndValue(ref content, ref tag);
+            var result = y.DeleteTagAndValue(content, tag);
             int i = result.Length;
             Debug.Write(result);
             Debug.WriteLine("<---output ends here");
-            Assert.AreEqual(result.Length, 207);
+            Assert.AreEqual(result.Length, 206);
         }
+
+        [TestMethod]
         public void TestReplaceSingleLine()
         {
             YMLMeister y = new YMLMeister();
@@ -171,13 +174,122 @@ namespace Tests
             string content = File.ReadAllText(f);
             string tag = "ms.author";
             Debug.WriteLine("-----Delete ms.author-----");
-            var result = y.ReplaceSingleValue(ref content, ref tag, "Donald Jr");
+            var result = y.ReplaceSingleValue(content, tag, "Donald Jr");
             int i = result.Length;
             Debug.Write(result);
             Debug.WriteLine("<---output ends here");
         //    Assert.AreEqual(result.Length, 207);
         }
+        [TestMethod]
+        public void TestCreateTag()
+        {
+            YMLMeister y = new YMLMeister();
+            string f = @"../../abstract-classes3.md";
+            string content = File.ReadAllText(f);
+            string tag = "ms.ImNew";
+            string newVal = "\"new Value\"";
+            Debug.WriteLine("-----Create ms.ImNew-----");
+            var result = y.CreateTag(content, tag, newVal);
+            int i = result.Length;
+            Debug.Write(result);
+            Debug.WriteLine("<---output ends here");
+            //    Assert.AreEqual(result.Length, 207);
+        }
 
+
+        [TestMethod]
+        public void TestGetYmlBlock()
+        {
+            YMLMeister y = new YMLMeister();
+            string f = @"../../abstract-classes3.md";
+            string content = File.ReadAllText(f);
+            string yml = y.GetYmlBlock(content);
+            Debug.WriteLine("-----Get YML Block-----");
+            int i = yml.Length;
+            Debug.Write(yml);
+            Debug.WriteLine("<---output ends here");
+            //    Assert.AreEqual(result.Length, 207);
+        }
+
+        [TestMethod]
+        public void TestGetAllTags()
+        {
+            YMLMeister y = new YMLMeister();
+            string f = @"../../abstract-classes3.md";
+            string content = File.ReadAllText(f);
+            string yml = y.GetYmlBlock(content);
+            Debug.WriteLine("-----Get All tags-----");
+            var tags = y.GetAllTags(yml);
+            Debug.WriteLine("<---output ends here");
+            foreach (string s in tags)
+            {
+                Debug.WriteLine(s);
+            }
+            //    Assert.AreEqual(result.Length, 207);
+        }
+
+        [TestMethod]
+        public void TestGetAllTagsWithCPPBracketKeywords()
+        {
+            YMLMeister y = new YMLMeister();
+            string f = @"../../catlmodule-class.md";
+            string content = File.ReadAllText(f);
+            string yml = y.GetYmlBlock(content);
+            Debug.WriteLine("-----Get All tags-----");
+            var tags = y.GetAllTags(yml);
+            Debug.WriteLine("<---output ends here");
+            foreach (string s in tags)
+            {
+                Debug.WriteLine(s);
+            }
+            //    Assert.AreEqual(result.Length, 207);
+        }
+
+        [TestMethod]
+        public void TestMaketagFromString()
+        {
+            YMLMeister y = new YMLMeister();
+            string f = @"../../catlmodule-class.md";
+            string content = File.ReadAllText(f);
+            string yml = y.GetYmlBlock(content);
+            Debug.WriteLine("-----Get All tags-----");
+            var matches = y.GetAllTags(yml);
+            Debug.WriteLine("<---output ends here");
+            var tags = new List<Tag>();
+            foreach (string m in matches)
+            {
+                var t = new Tag(m);
+                tags.Add(t);
+                Debug.WriteLine("tag name is: " + t.Name);
+                foreach (var i in t.Values)
+                {
+                    Debug.WriteLine("   " + i);
+                }
+            }
+            Debug.WriteLine("make tags from those same tuples:");
+            foreach (var v in tags)
+            {
+                Debug.WriteLine(v.ToString());
+            }
+        }
+
+        [TestMethod]
+        public void TestParseYml2()
+        {
+            YMLMeister y = new YMLMeister();
+            string f = @"../../abstract-classes3.md";
+            var content = File.ReadAllText(f);
+            var result = y.ParseYML2(content);
+            foreach (var v in result)
+            {
+                Debug.WriteLine(v.Name);
+                foreach (var v2 in v.Values)
+                {
+                    Debug.WriteLine("   " + v2);
+                }
+            }
+        }
     }
 }
 
+;

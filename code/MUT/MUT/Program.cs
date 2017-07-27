@@ -12,8 +12,12 @@ namespace MUT
     class Program
     {
         static void Main(string[] args)
-        {   // Get a list of filenames from a folder
-            string[] fileArray = Directory.GetFiles(@"C:\Users\tglee\vstest\docs\install\", "*.md", SearchOption.AllDirectories);
+        {
+            var opts = new Options(args);
+
+            // Get a list of filenames from a folder
+            //string[] fileArray = Directory.GetFiles(@"C:\Users\tglee\vstest\docs\install\", "*.md", SearchOption.AllDirectories);
+            var fileArray = opts.GetFiles();
 
             // Write header values for extract file
             StringBuilder sb = new StringBuilder();
@@ -49,19 +53,27 @@ namespace MUT
                     sb.Append(v.Key);
                     sb.Append("\t");
                     sb.Append(v.Value);
-                    sb.Append("\t");
-                    sb.Append("Format");
                     sb.Append(Environment.NewLine);
 
-
-                    Console.WriteLine(v.Key + "    " + v.Value);
                 }
 
 
-                // write to sb
             }//end foreach
 
-            File.WriteAllText(@"c:\temp\MyTest.txt", sb.ToString());
+            // If an output file was specified,
+            if (opts.use_output)
+            {
+                // write to the specified file
+                File.WriteAllText(opts.output, sb.ToString());
+            }
+            else
+            {
+                // else write sb to console.
+                Console.WriteLine(sb.ToString());
+            }
+
+            // debug trap so you can see it at work; remove from production
+            Console.WriteLine("Press any key to continue... ... ...");
             Console.ReadLine();
         }
 
@@ -111,6 +123,17 @@ namespace MUT
             if (currentVal.Length > 1)
             {
                 currentVal.Append("}");
+
+                // Append format here, since this is where we know it.
+                if (inMultiline)
+                {
+                    currentVal.Append("\tDash");
+                }
+                else
+                {
+                    currentVal.Append("\t");
+                }
+
                 d[currentKey] = currentVal.ToString().Trim().Replace("\"- ", "\", ").Replace("{-", "{"); ;
             }
             return d;
