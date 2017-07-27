@@ -24,6 +24,115 @@ namespace MUT
             Values = vals;
             Format = fmt;
         }
+
+        /// <summary>
+        /// Creates a tag object from spreadsheet columns, in particular,
+        /// where multiple values might be contained in a single column.
+        /// If values are strings,they must already have quotes around them.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="vals"></param>
+        /// <param name="fmt"></param>
+        public Tag(string name, string vals, string fmt)
+        {
+            Name = name;
+            Format = fmt;
+            var parts = vals.Split(',');
+            Values = new List<string>();
+            foreach (var s in parts)
+            {
+                Values.Add(s.Trim());
+            }
+            Values.Sort();
+        }
+        /// <summary>
+        /// Creates a tag object given a tag-value substring from the yml.
+        /// </summary>
+        /// <param name="tagAndVal"></param>
+        public Tag(string tagAndVal)
+        {
+                //  string s = m.Value;
+                var parts = tagAndVal.Split('\n');
+                var tagLine = parts[0].Split(':');
+                Name = tagLine[0];
+                string tagVal = tagLine[1].Trim();
+                Format = "single";
+                Values = new List<string>();
+                if (tagVal.Length > 0)
+                {
+                    if (tagVal.StartsWith("[") && tagVal.EndsWith("]") && tagVal.Length > 2)
+                    {
+                        // multi values in a single comma-separated string
+                        Format = "bracket";
+                        string temp = tagVal.TrimStart('[');
+                        temp = temp.TrimEnd(']');
+                        var valParts = temp.Split(',');
+                        foreach (var p in valParts)
+                        {
+                            Values.Add(p);
+                        }
+                    }
+                    else
+                        Values.Add(tagVal);
+                }
+                else
+                {
+                    Format = "dash";
+                    //dash formatted each val on separate line
+                    // start on 1 because line zero was the tag itself
+                    for (int i = 1; i < parts.Length; ++i)
+                    {
+                        var s = parts[i].Replace("  - ", "");
+                        Values.Add(s.Trim());
+                    }
+                }
+        }
+
+        public override string ToString() 
+        {
+            string fmt = Format;
+            // TODO were to do this validation? In Tag ctor?
+            if (String.CompareOrdinal("single", fmt.ToLower()) == 0 && Values.Count > 1)
+            {
+                fmt = "bracket";
+                Console.WriteLine("Warning: format was single but multiple values were found. " +
+                           "Changing to format to bracket. All values are written to ");
+            }
+
+            // Init sb with tag name
+            StringBuilder sb = new StringBuilder(Name);
+            sb.Append(": ");
+            if (String.CompareOrdinal("single", fmt.ToLower()) == 0)
+            {
+                sb.Append(Values[0]).Append(Environment.NewLine);
+            }
+            else if (String.CompareOrdinal("dash", fmt.ToLower()) == 0)
+            {
+                sb.Append(Environment.NewLine); //tag is on its own line in dash format
+                foreach (var val in Values)
+                {
+                    sb.Append("  - ").Append(val).Append(Environment.NewLine);
+                }
+
+            }
+            else if (String.CompareOrdinal("bracket", fmt.ToLower()) == 0)
+            {
+                sb.Append("[");
+                foreach (var val in Values)
+                {
+                    sb.Append(val).Append(", ");
+                }
+                sb.Remove(sb.Length - 3, 2); //remove last comma
+                sb.Append("]").Append(Environment.NewLine);
+            }
+            else
+            {
+                throw new ArgumentException("format must be single, bracket or dash");
+            }
+
+            return sb.ToString();
+        }
+
     }
     public class YMLMeister
     {
@@ -58,7 +167,7 @@ namespace MUT
             // prevent searches over entire content and the 
             // false hits that could generate
             int lineEnd = lineEnd = file.IndexOf("\n", startPos);
-            if (!IsMultilineValue( file, startPos))
+            if (!IsMultilineValue(file, startPos))
             {
                 return lineEnd + 1; // include the last \n
             }
@@ -81,7 +190,7 @@ namespace MUT
         /// <returns></returns>
         public string GetTagAndValue(string file, int beg)
         {
-            int end = GetTagValueEndPos( file, beg);
+            int end = GetTagValueEndPos(file, beg);
             return file.Substring(beg, end - beg);
         }
 
@@ -94,8 +203,8 @@ namespace MUT
         /// <returns></returns>
         public string GetTagAndValue(string file, string tag)
         {
-            int beg = GetTagStartPos( file, tag);
-            int end = GetTagValueEndPos( file, beg);
+            int beg = GetTagStartPos(file, tag);
+            int end = GetTagValueEndPos(file, beg);
             return file.Substring(beg, end - beg);
         }
 
@@ -107,10 +216,10 @@ namespace MUT
         /// <returns></returns>
         public string GetValue(string file, string tag)
         {
-            int beg = GetTagStartPos( file, tag);
+            int beg = GetTagStartPos(file, tag);
             //find the ":" and go past it
             int begValue = file.IndexOf(':', beg) + 1;
-            int end = GetTagValueEndPos( file, beg);
+            int end = GetTagValueEndPos(file, beg);
             return file.Substring(begValue, end - begValue).Trim();
         }
 
@@ -128,7 +237,7 @@ namespace MUT
         /// <returns></returns>
         public string GetPrefix(string file, string tag, int startPos = 0)
         {
-            int tagPos = GetTagStartPos( file, tag);
+            int tagPos = GetTagStartPos(file, tag);
             return file.Substring(startPos, tagPos - startPos);
         }
 
@@ -141,8 +250,8 @@ namespace MUT
         /// <returns></returns>
         public string GetSuffix(string file, string tag)
         {
-            int lineStart = GetTagStartPos( file, tag);
-            int lineEnd = GetTagValueEndPos( file, lineStart);
+            int lineStart = GetTagStartPos(file, tag);
+            int lineEnd = GetTagValueEndPos(file, lineStart);
             return file.Substring(lineEnd, file.Length - lineEnd);
         }
 
@@ -292,101 +401,17 @@ namespace MUT
 
         public List<Tag> ParseYML2(string file)
         {
-            var yml = GetYmlBlock( file);
+            var yml = GetYmlBlock(file);
             var tags = GetAllTags(yml);
             var tagList = new List<Tag>();
             foreach (var t in tags)
             {
-                tagList.Add(MakeTagFromString(t));
+                tagList.Add(new Tag(t));
             }
             return tagList;
         }
 
-        public Tag MakeTagFromString(string tagAndVal)
-        {
-          //  string s = m.Value;
-            var parts = tagAndVal.Split('\n');
-            var tagLine = parts[0].Split(':');
-            string tagName = tagLine[0];
-            string tagVal = tagLine[1].Trim();
-            string format = "single";
-            List<string> vals = new List<string>();
-            if (tagVal.Length > 0)
-            {
-                if (tagVal.StartsWith("[") && tagVal.EndsWith("]") && tagVal.Length > 2)
-                {
-                    // multi values in a single comma-separated string
-                    format = "bracket";
-                    string temp = tagVal.TrimStart('[');
-                    temp = temp.TrimEnd(']');
-                    var valParts = temp.Split(',');
-                    foreach (var p in valParts)
-                    {
-                        vals.Add(p);
-                    }
-                }
-                else
-                    vals.Add(tagVal);
-            }
-            else
-            {
-                format = "dash";
-                //dash formatted each val on separate line
-                // start on 1 because line zero was the tag itself
-                for (int i = 1; i < parts.Length; ++i)
-                {
-                    var s = parts[i].Replace("  - ", "");
-                    vals.Add(s.Trim());
-                }
-            }
-            return new Tag(tagName, vals, format);
-        }
-
-        public string MakeStringFromTag(Tag tag)
-        {
-            string fmt = tag.Format;
-            // TODO were to do this validation? In Tag ctor?
-            if (String.CompareOrdinal("single", fmt.ToLower()) == 0 && tag.Values.Count > 1)
-            {
-                fmt = "bracket";
-                Console.WriteLine("Warning: format was single but multiple values were found. " +
-                           "Changing to format to bracket. All values are written to tag.");
-            }
-
-            // Init sb with tag name
-            StringBuilder sb = new StringBuilder(tag.Name);
-            sb.Append(": ");
-            if (String.CompareOrdinal("single", fmt.ToLower()) == 0)
-            {
-                sb.Append(tag.Values[0]).Append(Environment.NewLine);
-            }
-            else if (String.CompareOrdinal("dash", fmt.ToLower()) == 0)
-            {
-                sb.Append(Environment.NewLine); //tag is on its own line in dash format
-                foreach (var val in tag.Values)
-                {
-                    sb.Append("  - ").Append(val).Append(Environment.NewLine);
-                }
-
-            }
-            else if (String.CompareOrdinal("bracket", fmt.ToLower()) == 0)
-            {
-                sb.Append("[");
-                foreach (var val in tag.Values)
-                {
-                    sb.Append(val).Append(", ");
-                }
-                sb.Remove(sb.Length - 3, 2); //remove last comma
-                sb.Append("]").Append(Environment.NewLine);
-            }
-            else
-            {
-                throw new ArgumentException("format must be single, bracket or dash");
-            }
-
-            return sb.ToString();
-        }
-
+        
         /// <summary>
         /// Gets all tags and their values in the yml block.
         /// </summary>
@@ -422,8 +447,8 @@ namespace MUT
 
         public string DeleteTagAndValue(string file, string tag)
         {
-            var pre = GetPrefix( file, tag);
-            var suf = GetSuffix( file, tag);
+            var pre = GetPrefix(file, tag);
+            var suf = GetSuffix(file, tag);
             StringBuilder sb = new StringBuilder(pre);
             sb.Append(suf);
             return sb.ToString();
@@ -431,9 +456,9 @@ namespace MUT
 
         public string ReplaceSingleValue(string file, string tag, string newVal)
         {
-            var pre = GetPrefix( file, tag);
-            var suf = GetSuffix( file, tag);
-            var old = GetTagAndValue( file, tag);
+            var pre = GetPrefix(file, tag);
+            var suf = GetSuffix(file, tag);
+            var old = GetTagAndValue(file, tag);
             var parts = old.Split(':');
             StringBuilder sb = new StringBuilder(pre);
             sb.Append(parts[0]).Append(": ").Append(newVal)
@@ -446,10 +471,10 @@ namespace MUT
         /// TODO--Place tag is proper ordered position in the metadatablock.
         /// </summary>
         /// <param name="file"></param>
-        /// <param name="tag"></param>
+        /// <param name="tagName"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public string CreateTag(string file, string tag, string value)
+        public string CreateTag(string file, string tagName, string value)
         {
             // skip over opening "---" and find the next one
             int metadataEndPos = file.IndexOf("---", 4);
@@ -457,19 +482,61 @@ namespace MUT
             string pre = file.Substring(0, metadataEndPos);
             string suf = file.Substring(metadataEndPos, file.Length - metadataEndPos);
             StringBuilder sb = new StringBuilder(pre);
-            sb.Append(tag).Append(": ").Append(value);
+            sb.Append(tagName).Append(": ").Append(value);
                 sb.Append("\r\n").Append(suf);
             return sb.ToString();
         }
 
 
-        public string AddValueToMultiTag(string file, string tag, string newVal)
+        public string AddValueToMultiTag(string file, string tagName, string newVal)
         {
-            var str = GetTagAndValue( file, tag);
-            var tagStruct = MakeTagFromString(str);
-            tagStruct.Values.Add(newVal);
-            tagStruct.Values.Sort();
-            return MakeStringFromTag(tagStruct);
+            var str = GetTagAndValue(file, tagName);
+            var tag = new Tag(str);
+
+            // Do not add a value if it already exists!
+            if (!tag.Values.Contains(newVal))
+            {
+                tag.Values.Add(newVal);
+            }
+            else
+            {
+                //TODO how to issue warnings? Log file?
+                Console.WriteLine("Warning: " + tag.Name +
+                    "in" + GetValue(file, "title") + "already has a value " + newVal);
+            }
+            tag.Values.Sort();
+            return tag.ToString();
+        }
+
+        /// <summary>
+        ///  Deletes one value from a multi-value tag. This could be done more efficiently
+        ///  by simple string replacement, but keeping this version for now
+        ///  for the sake of consistency and in case the structured approach proves useful for
+        ///  other more complex operations we might want to do later.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="tagName"></param>
+        /// <param name="val"></param>
+        /// <returns>A string that represents the new tag.</returns>
+        public string DeleteValueFromMultiTag(string file, string tagName, string val)
+        {
+            var str = GetTagAndValue(file, tagName);
+            var tag = new Tag(str);
+
+            // Can't delete a value if it doesn't exist!
+            if (tag.Values.Contains(val))
+            {
+                tag.Values.Remove(val);
+                tag.Values.Sort();
+            }
+            else
+            {
+                //TODO how to issue warnings? Log file?
+                Console.WriteLine("Warning. Nothing to delete: " + tag.Name +
+                    "in" + GetValue(file, "title") + "does not contain a value " + val);
+            }
+
+            return tag.ToString();
         }
         #endregion
     }

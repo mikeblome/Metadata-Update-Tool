@@ -241,7 +241,7 @@ namespace Tests
             var tags = new List<Tag>();
             foreach (string m in matches)
             {
-                var t = y.MakeTagFromString(m);
+                var t = new Tag(m);
                 tags.Add(t);
                 Debug.WriteLine("tag name is: " + t.Name);
                 foreach (var i in t.Values)
@@ -252,7 +252,7 @@ namespace Tests
             Debug.WriteLine("make tags from those same tuples:");
             foreach (var v in tags)
             {
-                Debug.WriteLine(y.MakeStringFromTag(v));
+                Debug.WriteLine(v.ToString());
             }
         }
 
