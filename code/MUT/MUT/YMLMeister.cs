@@ -13,6 +13,18 @@ namespace MUT
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
 
+    public class Tag
+    {
+        public string Name;
+        public List<string> Values;
+        public string Format;
+        public Tag(string name, List<string> vals, string fmt)
+        {
+            Name = name;
+            Values = vals;
+            Format = fmt;
+        }
+    }
     public class YMLMeister
     {
         #region reading values
@@ -22,7 +34,7 @@ namespace MUT
         /// <param name="file"></param>
         /// <param name="tag"></param>
         /// <returns></returns>
-        public int GetTagStartPos(ref string file, ref string tag)
+        public int GetTagStartPos(string file, string tag)
         {
             // Get the upper bound of metadata block to 
             // prevent searches over entire content and the 
@@ -40,13 +52,13 @@ namespace MUT
         /// <param name="file"></param>
         /// <param name="startPos"></param>
         /// <returns></returns>
-        public int GetTagValueEndPos(ref string file, int startPos)
+        public int GetTagValueEndPos(string file, int startPos)
         {
             // Get the upper bound of metadata block to 
             // prevent searches over entire content and the 
             // false hits that could generate
             int lineEnd = lineEnd = file.IndexOf("\n", startPos);
-            if (!IsMultilineValue(ref file, startPos))
+            if (!IsMultilineValue( file, startPos))
             {
                 return lineEnd + 1; // include the last \n
             }
@@ -67,9 +79,9 @@ namespace MUT
         /// <param name="file"></param>
         /// <param name="tag"></param>
         /// <returns></returns>
-        public string GetTagAndValue(ref string file, int beg)
+        public string GetTagAndValue(string file, int beg)
         {
-            int end = GetTagValueEndPos(ref file, beg);
+            int end = GetTagValueEndPos( file, beg);
             return file.Substring(beg, end - beg);
         }
 
@@ -80,10 +92,10 @@ namespace MUT
         /// <param name="file"></param>
         /// <param name="tag"></param>
         /// <returns></returns>
-        public string GetTagAndValue(ref string file, ref string tag)
+        public string GetTagAndValue(string file, string tag)
         {
-            int beg = GetTagStartPos(ref file, ref tag);
-            int end = GetTagValueEndPos(ref file, beg);
+            int beg = GetTagStartPos( file, tag);
+            int end = GetTagValueEndPos( file, beg);
             return file.Substring(beg, end - beg);
         }
 
@@ -93,12 +105,12 @@ namespace MUT
         /// <param name="file"></param>
         /// <param name="tag"></param>
         /// <returns></returns>
-        public string GetValue(ref string file, ref string tag)
+        public string GetValue(string file, string tag)
         {
-            int beg = GetTagStartPos(ref file, ref tag);
+            int beg = GetTagStartPos( file, tag);
             //find the ":" and go past it
             int begValue = file.IndexOf(':', beg) + 1;
-            int end = GetTagValueEndPos(ref file, beg);
+            int end = GetTagValueEndPos( file, beg);
             return file.Substring(begValue, end - begValue).Trim();
         }
 
@@ -114,28 +126,30 @@ namespace MUT
         /// <param name="tag"></param>
         /// <param name="startPos"></param>
         /// <returns></returns>
-        public string GetPrefix(ref string file, ref string tag, int startPos = 0)
+        public string GetPrefix(string file, string tag, int startPos = 0)
         {
-            int tagPos = GetTagStartPos(ref file, ref tag);
+            int tagPos = GetTagStartPos( file, tag);
             return file.Substring(startPos, tagPos - startPos);
         }
 
         /// <summary>
-        /// Gets the substring from the end of the tag's value to the end of the file. 
+        /// Gets the substring from the end of the tag's value to the end of the entire file. 
         /// Append this when rebuilding the file string after making changes to a tag.
         /// </summary>
         /// <param name="file"></param>
         /// <param name="tag"></param>
         /// <returns></returns>
-        public string GetSuffix(ref string file, ref string tag)
+        public string GetSuffix(string file, string tag)
         {
-            int lineStart = GetTagStartPos(ref file, ref tag);
-            int lineEnd = GetTagValueEndPos(ref file, lineStart);
+            int lineStart = GetTagStartPos( file, tag);
+            int lineEnd = GetTagValueEndPos( file, lineStart);
             return file.Substring(lineEnd, file.Length - lineEnd);
         }
 
         /// <summary>
-        ///     
+        /// Tells whether a value is (a) single val on the same line as the tag
+        /// (b) multi-val on same line or (c) multi-val (dash format) on multi-lines following
+        /// tag line.
         /// </summary>
         /// <param name="file"></param>
         /// <param name="tag"></param>
@@ -149,7 +163,7 @@ namespace MUT
         /// (a) there is a possibly empty string val, not bracketed, on same line after colon
         /// --AND-- next line is either "---" or a new tag
         /// </remarks>
-        public bool IsMultilineValue(ref string file, ref string tag)
+        public bool IsMultilineValue(string file, string tag)
         {
             string temp = tag + ":";
             int start = file.IndexOf(temp);
@@ -173,7 +187,7 @@ namespace MUT
             return true;
         }
 
-        public bool IsMultilineValue(ref string file, int start)
+        public bool IsMultilineValue(string file, int start)
         {
 
             int end = file.IndexOf("\n", start);
@@ -276,31 +290,33 @@ namespace MUT
             return d;
         }
 
-        public List<Tuple<string, List<string>>> ParseYML2(ref string file)
+        public List<Tag> ParseYML2(string file)
         {
-            var yml = GetYmlBlock(ref file);
+            var yml = GetYmlBlock( file);
             var tags = GetAllTags(yml);
-            var tagList = new List<Tuple<string, List <string>>>();
+            var tagList = new List<Tag>();
             foreach (var t in tags)
             {
-                tagList.Add(MakeTupleFromTag(t));
+                tagList.Add(MakeTagFromString(t));
             }
             return tagList;
         }
 
-        public Tuple<string, List<string>> MakeTupleFromTag(string tagAndVal)
+        public Tag MakeTagFromString(string tagAndVal)
         {
           //  string s = m.Value;
             var parts = tagAndVal.Split('\n');
             var tagLine = parts[0].Split(':');
             string tagName = tagLine[0];
             string tagVal = tagLine[1].Trim();
+            string format = "single";
             List<string> vals = new List<string>();
             if (tagVal.Length > 0)
             {
                 if (tagVal.StartsWith("[") && tagVal.EndsWith("]") && tagVal.Length > 2)
                 {
                     // multi values in a single comma-separated string
+                    format = "bracket";
                     string temp = tagVal.TrimStart('[');
                     temp = temp.TrimEnd(']');
                     var valParts = temp.Split(',');
@@ -314,16 +330,68 @@ namespace MUT
             }
             else
             {
+                format = "dash";
                 //dash formatted each val on separate line
                 // start on 1 because line zero was the tag itself
                 for (int i = 1; i < parts.Length; ++i)
                 {
-                    vals.Add(parts[i].Trim());
+                    var s = parts[i].Replace("  - ", "");
+                    vals.Add(s.Trim());
                 }
             }
-            return new Tuple<string, List<string>>(tagName, vals);
+            return new Tag(tagName, vals, format);
         }
 
+        public string MakeStringFromTag(Tag tag)
+        {
+            string fmt = tag.Format;
+            // TODO were to do this validation? In Tag ctor?
+            if (String.CompareOrdinal("single", fmt.ToLower()) == 0 && tag.Values.Count > 1)
+            {
+                fmt = "bracket";
+                Console.WriteLine("Warning: format was single but multiple values were found. " +
+                           "Changing to format to bracket. All values are written to tag.");
+            }
+
+            // Init sb with tag name
+            StringBuilder sb = new StringBuilder(tag.Name);
+            sb.Append(": ");
+            if (String.CompareOrdinal("single", fmt.ToLower()) == 0)
+            {
+                sb.Append(tag.Values[0]).Append(Environment.NewLine);
+            }
+            else if (String.CompareOrdinal("dash", fmt.ToLower()) == 0)
+            {
+                sb.Append(Environment.NewLine); //tag is on its own line in dash format
+                foreach (var val in tag.Values)
+                {
+                    sb.Append("  - ").Append(val).Append(Environment.NewLine);
+                }
+
+            }
+            else if (String.CompareOrdinal("bracket", fmt.ToLower()) == 0)
+            {
+                sb.Append("[");
+                foreach (var val in tag.Values)
+                {
+                    sb.Append(val).Append(", ");
+                }
+                sb.Remove(sb.Length - 3, 2); //remove last comma
+                sb.Append("]").Append(Environment.NewLine);
+            }
+            else
+            {
+                throw new ArgumentException("format must be single, bracket or dash");
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Gets all tags and their values in the yml block.
+        /// </summary>
+        /// <param name="yml"></param>
+        /// <returns></returns>
         public List<string> GetAllTags(string yml)
         {
             
@@ -331,19 +399,18 @@ namespace MUT
             List<string> tags = new List<string>();
             foreach (Match m in matches)
             {
-                tags.Add(GetTagAndValue(ref yml, m.Index));
+                tags.Add(GetTagAndValue( yml, m.Index));
             }
 
             return tags;
-           // return Regex.Matches(yml, @"^([A-Za-z\._]+?:[\s\S]+?)\n[\w-]", RegexOptions.Multiline);
-        }
+         }
 
         /// <summary>
         /// Gets a yml block from file including opening and closing "---" markers
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public string GetYmlBlock(ref string file)
+        public string GetYmlBlock(string file)
         {
             return file.Substring(0, file.IndexOf("---", 4) + 3);
         }
@@ -353,20 +420,20 @@ namespace MUT
 
         #region CRUD operations
 
-        public string DeleteTagAndValue(ref string file, ref string tag)
+        public string DeleteTagAndValue(string file, string tag)
         {
-            var pre = GetPrefix(ref file, ref tag);
-            var suf = GetSuffix(ref file, ref tag);
+            var pre = GetPrefix( file, tag);
+            var suf = GetSuffix( file, tag);
             StringBuilder sb = new StringBuilder(pre);
             sb.Append(suf);
             return sb.ToString();
         }
 
-        public string ReplaceSingleValue(ref string file, ref string tag, string newVal)
+        public string ReplaceSingleValue(string file, string tag, string newVal)
         {
-            var pre = GetPrefix(ref file, ref tag);
-            var suf = GetSuffix(ref file, ref tag);
-            var old = GetTagAndValue(ref file, ref tag);
+            var pre = GetPrefix( file, tag);
+            var suf = GetSuffix( file, tag);
+            var old = GetTagAndValue( file, tag);
             var parts = old.Split(':');
             StringBuilder sb = new StringBuilder(pre);
             sb.Append(parts[0]).Append(": ").Append(newVal)
@@ -376,13 +443,13 @@ namespace MUT
 
         /// <summary>
         /// Adds a new tag and value to the metadata section. 
-        /// TODO--Place tag is proper ordered position in hte metadatablock.
+        /// TODO--Place tag is proper ordered position in the metadatablock.
         /// </summary>
         /// <param name="file"></param>
         /// <param name="tag"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public string CreateTag(ref string file, string tag, string value)
+        public string CreateTag(string file, string tag, string value)
         {
             // skip over opening "---" and find the next one
             int metadataEndPos = file.IndexOf("---", 4);
@@ -395,9 +462,14 @@ namespace MUT
             return sb.ToString();
         }
 
-        public string UpdateMultiValue(ref string file, ref string tag, string newVal)
+
+        public string AddValueToMultiTag(string file, string tag, string newVal)
         {
-            return "";
+            var str = GetTagAndValue( file, tag);
+            var tagStruct = MakeTagFromString(str);
+            tagStruct.Values.Add(newVal);
+            tagStruct.Values.Sort();
+            return MakeStringFromTag(tagStruct);
         }
         #endregion
     }
