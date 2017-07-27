@@ -53,14 +53,15 @@ namespace MUT
         {
                 //  string s = m.Value;
                 var parts = tagAndVal.Split('\n');
-                var tagLine = parts[0].Split(':');
-                Name = tagLine[0];
-                string tagVal = tagLine[1].Trim();
+
+            int idx = parts[0].IndexOf(':');
+                Name = parts[0].Substring(0, idx);
+            string tagVal = parts[0].Substring(idx + 1).Trim();
                 Format = "single";
                 Values = new List<string>();
                 if (tagVal.Length > 0)
                 {
-                    if (tagVal.StartsWith("[") && tagVal.EndsWith("]") && tagVal.Length > 2)
+                    if (tagVal.Trim().StartsWith("[") && tagVal.EndsWith("]") && tagVal.Length > 2)
                     {
                         // multi values in a single comma-separated string
                         Format = "bracket";
@@ -420,7 +421,7 @@ namespace MUT
         public List<string> GetAllTags(string yml)
         {
             
-             var matches = Regex.Matches(yml, @"[A-Za-z\._]+:", RegexOptions.Multiline);
+             var matches = Regex.Matches(yml, @"^[A-Za-z0-9\._]+:", RegexOptions.Multiline);
             List<string> tags = new List<string>();
             foreach (Match m in matches)
             {

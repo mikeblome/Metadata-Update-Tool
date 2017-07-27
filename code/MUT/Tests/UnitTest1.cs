@@ -229,10 +229,27 @@ namespace Tests
         }
 
         [TestMethod]
+        public void TestGetAllTagsWithCPPBracketKeywords()
+        {
+            YMLMeister y = new YMLMeister();
+            string f = @"../../catlmodule-class.md";
+            string content = File.ReadAllText(f);
+            string yml = y.GetYmlBlock(content);
+            Debug.WriteLine("-----Get All tags-----");
+            var tags = y.GetAllTags(yml);
+            Debug.WriteLine("<---output ends here");
+            foreach (string s in tags)
+            {
+                Debug.WriteLine(s);
+            }
+            //    Assert.AreEqual(result.Length, 207);
+        }
+
+        [TestMethod]
         public void TestMaketagFromString()
         {
             YMLMeister y = new YMLMeister();
-            string f = @"../../abstract-classes3.md";
+            string f = @"../../catlmodule-class.md";
             string content = File.ReadAllText(f);
             string yml = y.GetYmlBlock(content);
             Debug.WriteLine("-----Get All tags-----");
