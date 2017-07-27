@@ -12,6 +12,8 @@ namespace mdapply
     {
         static void Main(string[] args)
         {
+            var opts = new Options(args);
+            opts.PrintOptions();
 
             var files = Directory.GetFiles("");
             foreach (var file in files)
