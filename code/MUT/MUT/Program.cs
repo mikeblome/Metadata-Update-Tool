@@ -58,12 +58,9 @@ namespace MUT
                     sb.Append(v.Value);
                     sb.Append(Environment.NewLine);
 
-
-                    // Console.WriteLine(v.Key + "    " + v.Value);
                 }
                 */
 
-                // write to sb
             }//end foreach
 
             cb.WriteFile(!opts.use_output);

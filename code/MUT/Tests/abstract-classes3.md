@@ -7,6 +7,6 @@ translation.priority.ht:
   - "cs-cz"
   - "de-de"
   - "es-es"
- ---
+---
 # Abstract Classes (C++)
 Abstract classes act
