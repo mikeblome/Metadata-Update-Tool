@@ -8,26 +8,30 @@ using System.Text.RegularExpressions;
 
 namespace MUT
 {
-    class CommandBuilder
+    public class CommandBuilder
     {
         StringBuilder sb;
+
+        public static readonly string Header = "FILENAME\tACTION\tTAG\tVALUE\tFORMAT";
 
         public string outputFile { get; private set; }
 
         public CommandBuilder(string filename)
         {
             this.outputFile = filename;
-            this.sb = new StringBuilder("Filename\tAction\tTag\tValue\tFormat\r\n");
+            this.sb = new StringBuilder(Header);
+            this.sb.Append(Environment.NewLine);
         }
 
         public bool ParseFile(string filename)
         {
-            string content = File.ReadAllText(filename);
+            string filedata = File.ReadAllText(filename);
 
             // Get YML
 
-            var beg = content.IndexOf("---") + 3;
-            var end = content.IndexOf("---", beg); // We assume "---" never appears inside a tag
+            var beg = filedata.IndexOf("---") + 3;
+            var end = filedata.IndexOf("---", beg); // We assume "---" never appears inside a tag
+
             if ((beg == -1) || (end == -1))
             {
                 Console.WriteLine("CommandBuilder: could not find metadata section in {0}", filename);
@@ -35,30 +39,30 @@ namespace MUT
                 return false;
             }
 
-            // Parse YML by looping over the lines
-            var dict = ParseYML(content.Substring(beg, end - beg));
-            ////   Console.WriteLine(s.Substring(beg, end - beg));
-            foreach (var v in dict)
+            // Parse YML into a list of Tag objects
+            var tagList = YMLMeister.ParseYML2(filedata);
+
+            // Append each tag's data to the output string
+            foreach (var tag in tagList)
             {
                 sb.Append(filename);
                 sb.Append("\t");
                 sb.Append("IGNORE");
                 sb.Append("\t");
-                sb.Append(v.Key);
+                sb.Append(tag.TagName);
                 sb.Append("\t");
-                sb.Append(v.Value);
+                sb.Append(tag.TagValuesExtractFormatted());
+                sb.Append("\t");
+                sb.Append(tag.TagFormat);
                 sb.Append(Environment.NewLine);
-
-
-                // Console.WriteLine(v.Key + "    " + v.Value);
             }
 
             return true;
         }
 
-        public void WriteFile(bool toStdOut)
+        public void WriteFile(bool toOutputFile)
         {
-            if (!toStdOut)
+            if (toOutputFile && !String.IsNullOrEmpty(outputFile))
             {
                 // write to the specified file
                 File.WriteAllText(outputFile, sb.ToString());
@@ -69,67 +73,6 @@ namespace MUT
                 Console.WriteLine(sb.ToString());
             }
 
-        }
-
-
-        static Dictionary<string, string> ParseYML(string yml)
-        {
-            var d = new Dictionary<string, string>();
-            var lines = yml.Split('\n');
-            Regex rgx = new Regex(@"[A-Za-z\._]+:");
-            string currentKey = "";
-            StringBuilder currentVal = new StringBuilder("{");
-
-            bool inMultiline = false;
-            foreach (var v in lines)
-            {
-                if (rgx.IsMatch(v))
-                {
-                    inMultiline = false;
-                    if (currentVal.Length > 1)
-                    {
-                        currentVal.Append("}");
-                        d[currentKey] = currentVal.ToString().Replace("\"- ", "\", ").Replace("{-", "{");
-                        currentVal.Clear();
-                        currentVal.Append("{");
-                    }
-
-                    var pair = v.Split(':');
-                    string str;
-                    bool b = d.TryGetValue(pair[0], out str);
-                    if (!b)
-                    {
-                        d.Add(pair[0].Trim(), pair[1].Trim());
-                        currentKey = pair[0].Trim();
-                    }
-                }
-                else
-                {
-                    int beg = v.IndexOf(" - ");
-                    if (beg >= 0 && beg < 5)
-                    {
-                        inMultiline = true;
-                        currentVal.Append(v.Substring(beg).Trim());
-                    }
-                }
-            }
-            if (currentVal.Length > 1)
-            {
-                currentVal.Append("}");
-
-                // Append format here, since this is where we know it.
-                if (inMultiline)
-                {
-                    currentVal.Append("\tDash");
-                }
-                else
-                {
-                    currentVal.Append("\t");
-                }
-
-                d[currentKey] = currentVal.ToString().Trim().Replace("\"- ", "\", ").Replace("{-", "{"); ;
-            }
-            return d;
         }
 
     }

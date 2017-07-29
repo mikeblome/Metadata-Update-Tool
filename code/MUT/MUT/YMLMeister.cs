@@ -13,144 +13,23 @@ namespace MUT
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
 
-    public class Tag
-    {
-        public string Name;
-        public List<string> Values;
-        public string Format;
-        public Tag(string name, List<string> vals, string fmt)
-        {
-            Name = name;
-            Values = vals;
-            Format = fmt;
-        }
 
-        /// <summary>
-        /// Creates a tag object from spreadsheet columns, in particular,
-        /// where multiple values might be contained in a single column.
-        /// If values are strings,they must already have quotes around them.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="vals"></param>
-        /// <param name="fmt"></param>
-        public Tag(string name, string vals, string fmt)
-        {
-            Name = name;
-            Format = fmt;
-            var parts = vals.Split(',');
-            Values = new List<string>();
-            foreach (var s in parts)
-            {
-                Values.Add(s.Trim());
-            }
-            Values.Sort();
-        }
-        /// <summary>
-        /// Creates a tag object given a tag-value substring from the yml.
-        /// </summary>
-        /// <param name="tagAndVal"></param>
-        public Tag(string tagAndVal)
-        {
-                //  string s = m.Value;
-                var parts = tagAndVal.Split('\n');
-
-            int idx = parts[0].IndexOf(':');
-                Name = parts[0].Substring(0, idx);
-            string tagVal = parts[0].Substring(idx + 1).Trim();
-                Format = "single";
-                Values = new List<string>();
-                if (tagVal.Length > 0)
-                {
-                    if (tagVal.Trim().StartsWith("[") && tagVal.EndsWith("]") && tagVal.Length > 2)
-                    {
-                        // multi values in a single comma-separated string
-                        Format = "bracket";
-                        string temp = tagVal.TrimStart('[');
-                        temp = temp.TrimEnd(']');
-                        var valParts = temp.Split(',');
-                        foreach (var p in valParts)
-                        {
-                            Values.Add(p);
-                        }
-                    }
-                    else
-                        Values.Add(tagVal);
-                }
-                else
-                {
-                    Format = "dash";
-                    //dash formatted each val on separate line
-                    // start on 1 because line zero was the tag itself
-                    for (int i = 1; i < parts.Length; ++i)
-                    {
-                        var s = parts[i].Replace("  - ", "");
-                        Values.Add(s.Trim());
-                    }
-                }
-        }
-
-        public override string ToString() 
-        {
-            string fmt = Format;
-            // TODO were to do this validation? In Tag ctor?
-            if (String.CompareOrdinal("single", fmt.ToLower()) == 0 && Values.Count > 1)
-            {
-                fmt = "bracket";
-                Console.WriteLine("Warning: format was single but multiple values were found. " +
-                           "Changing to format to bracket. All values are written to ");
-            }
-
-            // Init sb with tag name
-            StringBuilder sb = new StringBuilder(Name);
-            sb.Append(": ");
-            if (String.CompareOrdinal("single", fmt.ToLower()) == 0)
-            {
-                sb.Append(Values[0]).Append(Environment.NewLine);
-            }
-            else if (String.CompareOrdinal("dash", fmt.ToLower()) == 0)
-            {
-                sb.Append(Environment.NewLine); //tag is on its own line in dash format
-                foreach (var val in Values)
-                {
-                    sb.Append("  - ").Append(val).Append(Environment.NewLine);
-                }
-
-            }
-            else if (String.CompareOrdinal("bracket", fmt.ToLower()) == 0)
-            {
-                sb.Append("[");
-                foreach (var val in Values)
-                {
-                    sb.Append(val).Append(", ");
-                }
-                sb.Remove(sb.Length - 3, 2); //remove last comma
-                sb.Append("]").Append(Environment.NewLine);
-            }
-            else
-            {
-                throw new ArgumentException("format must be single, bracket or dash");
-            }
-
-            return sb.ToString();
-        }
-
-    }
     public class YMLMeister
     {
         #region reading values
         /// <summary>
         ///     Gets the starting position of the specified tag.
         /// </summary>
-        /// <param name="file"></param>
+        /// <param name="filedata"></param>
         /// <param name="tag"></param>
         /// <returns></returns>
-        public int GetTagStartPos(string file, string tag)
+        public static int GetTagStartPos(string filedata, string tag)
         {
             // Get the upper bound of metadata block to 
             // prevent searches over entire content and the 
             // false hits that could generate
-            int metadataEndPos = file.IndexOf("---", 4);
-            return file.IndexOf(tag, 4, metadataEndPos - 4);
+            int metadataEndPos = filedata.IndexOf("---", 4);
+            return filedata.IndexOf(tag, 4, metadataEndPos - 4);
         }
 
         /// <summary>
@@ -159,16 +38,16 @@ namespace MUT
         /// the next tag within the metadata block. If there is none, then
         /// current tag is the last one and endPos is the last character before the "\r\n---"
         /// </summary>
-        /// <param name="file"></param>
+        /// <param name="filedata"></param>
         /// <param name="startPos"></param>
         /// <returns></returns>
-        public int GetTagValueEndPos(string file, int startPos)
+        public static int GetTagValueEndPos(string filedata, int startPos)
         {
             // Get the upper bound of metadata block to 
             // prevent searches over entire content and the 
             // false hits that could generate
-            int lineEnd = lineEnd = file.IndexOf("\n", startPos);
-            if (!IsMultilineValue(file, startPos))
+            int lineEnd = lineEnd = filedata.IndexOf("\n", startPos);
+            if (!IsMultilineValue(filedata, startPos))
             {
                 return lineEnd + 1; // include the last \n
             }
@@ -178,7 +57,7 @@ namespace MUT
             // doeesn't allow us to specify a startingPos for the search.
             // the substring's zero element is really lineEnd
             // in the original string. subtract 1 to backtrack over the \n
-            int ret = Regex.Match(file.Substring(lineEnd), @"([A-Za-z\._]+:)|(---)").Index;
+            int ret = Regex.Match(filedata.Substring(lineEnd), @"([A-Za-z\._]+:)|(---)").Index;
             return ret + lineEnd - 1;
             
         }
@@ -186,42 +65,42 @@ namespace MUT
         /// <summary>
         ///     Gets the tag itself, and its value
         /// </summary>
-        /// <param name="file"></param>
+        /// <param name="filedata"></param>
         /// <param name="tag"></param>
         /// <returns></returns>
-        public string GetTagAndValue(string file, int beg)
+        public static string GetTagAndValue(string filedata, int beg)
         {
-            int end = GetTagValueEndPos(file, beg);
-            return file.Substring(beg, end - beg);
+            int end = GetTagValueEndPos(filedata, beg);
+            return filedata.Substring(beg, end - beg);
         }
 
 
         /// <summary>
         ///     Gets the tag itself, and its value
         /// </summary>
-        /// <param name="file"></param>
+        /// <param name="filedata"></param>
         /// <param name="tag"></param>
         /// <returns></returns>
-        public string GetTagAndValue(string file, string tag)
+        public static string GetTagAndValue(string filedata, string tag)
         {
-            int beg = GetTagStartPos(file, tag);
-            int end = GetTagValueEndPos(file, beg);
-            return file.Substring(beg, end - beg);
+            int beg = GetTagStartPos(filedata, tag);
+            int end = GetTagValueEndPos(filedata, beg);
+            return filedata.Substring(beg, end - beg);
         }
 
         /// <summary>
         /// Gets only the value of a specified tag, whether single line or multi-line
         /// </summary>
-        /// <param name="file"></param>
+        /// <param name="filedata"></param>
         /// <param name="tag"></param>
         /// <returns></returns>
-        public string GetValue(string file, string tag)
+        public static string GetValue(string filedata, string tag)
         {
-            int beg = GetTagStartPos(file, tag);
+            int beg = GetTagStartPos(filedata, tag);
             //find the ":" and go past it
-            int begValue = file.IndexOf(':', beg) + 1;
-            int end = GetTagValueEndPos(file, beg);
-            return file.Substring(begValue, end - begValue).Trim();
+            int begValue = filedata.IndexOf(':', beg) + 1;
+            int end = GetTagValueEndPos(filedata, beg);
+            return filedata.Substring(begValue, end - begValue).Trim();
         }
 
         /// <summary>
@@ -232,28 +111,28 @@ namespace MUT
         ///   range from the end of hte last line that was modified to the beginning
         ///   of the next line to be modified.
         /// </summary>
-        /// <param name="file"></param>
+        /// <param name="filedata"></param>
         /// <param name="tag"></param>
         /// <param name="startPos"></param>
         /// <returns></returns>
-        public string GetPrefix(string file, string tag, int startPos = 0)
+        public static string GetPrefix(string filedata, string tag, int startPos = 0)
         {
-            int tagPos = GetTagStartPos(file, tag);
-            return file.Substring(startPos, tagPos - startPos);
+            int tagPos = GetTagStartPos(filedata, tag);
+            return filedata.Substring(startPos, tagPos - startPos);
         }
 
         /// <summary>
         /// Gets the substring from the end of the tag's value to the end of the entire file. 
         /// Append this when rebuilding the file string after making changes to a tag.
         /// </summary>
-        /// <param name="file"></param>
+        /// <param name="filedata"></param>
         /// <param name="tag"></param>
         /// <returns></returns>
-        public string GetSuffix(string file, string tag)
+        public static string GetSuffix(string filedata, string tag)
         {
-            int lineStart = GetTagStartPos(file, tag);
-            int lineEnd = GetTagValueEndPos(file, lineStart);
-            return file.Substring(lineEnd, file.Length - lineEnd);
+            int lineStart = GetTagStartPos(filedata, tag);
+            int lineEnd = GetTagValueEndPos(filedata, lineStart);
+            return filedata.Substring(lineEnd, filedata.Length - lineEnd);
         }
 
         /// <summary>
@@ -261,7 +140,7 @@ namespace MUT
         /// (b) multi-val on same line or (c) multi-val (dash format) on multi-lines following
         /// tag line.
         /// </summary>
-        /// <param name="file"></param>
+        /// <param name="filedata"></param>
         /// <param name="tag"></param>
         /// <returns></returns>
         /// <remarks>            
@@ -273,12 +152,12 @@ namespace MUT
         /// (a) there is a possibly empty string val, not bracketed, on same line after colon
         /// --AND-- next line is either "---" or a new tag
         /// </remarks>
-        public bool IsMultilineValue(string file, string tag)
+        public static bool IsMultilineValue(string filedata, string tag)
         {
             string temp = tag + ":";
-            int start = file.IndexOf(temp);
-            int end = file.IndexOf("\n", start);
-            var line = file.Substring(start, end - start);
+            int start = filedata.IndexOf(temp);
+            int end = filedata.IndexOf("\n", start);
+            var line = filedata.Substring(start, end - start);
 
             if (!line.Contains(":"))
             {
@@ -287,7 +166,7 @@ namespace MUT
             }
 
             // yes, then sanity check: is the next line a new tag?
-            string nextLine = file.Substring(end + 1, file.IndexOf("\n", end + 1));
+            string nextLine = filedata.Substring(end + 1, filedata.IndexOf("\n", end + 1));
             if (Regex.IsMatch(nextLine, @"^[A_Za-z0-9\._-]+:"))
             {
                 // tag is a single value 
@@ -297,11 +176,11 @@ namespace MUT
             return true;
         }
 
-        public bool IsMultilineValue(string file, int start)
+        public static bool IsMultilineValue(string filedata, int start)
         {
 
-            int end = file.IndexOf("\n", start);
-            var line = file.Substring(start, end - start);
+            int end = filedata.IndexOf("\n", start);
+            var line = filedata.Substring(start, end - start);
 
             if (!line.Contains(":"))
             {
@@ -310,12 +189,12 @@ namespace MUT
             }
 
             // yes, then sanity check: is the next line a new tag?
-            int idx = file.IndexOf("\n", end + 1);
+            int idx = filedata.IndexOf("\n", end + 1);
             if (idx == -1)
             {
                 return false; // we must be at the end of the block
             }
-            string nextLine = file.Substring(end + 1, idx - end);
+            string nextLine = filedata.Substring(end + 1, idx - end);
             if (Regex.IsMatch(nextLine, @"^[A_Za-z0-9\._-]+:"))
             {
                 // tag is a single value 
@@ -325,6 +204,7 @@ namespace MUT
             return true;
         }
 
+#if NEVER
         /// <summary>
         ///     Reads a YML block into a dictionary. For use in mdextract. Compresses multi-line
         ///     values into a single comma-separated string.
@@ -399,11 +279,26 @@ namespace MUT
             }
             return d;
         }
-
-        public List<Tag> ParseYML2(string file)
+#endif
+        public static List<Tag> ParseYML2(string filedata)
         {
-            var yml = GetYmlBlock(file);
+            var yml = GetYmlBlock(filedata);
+#if CURIOUS
+            Console.WriteLine("vvvvvvvvvvvvvvv YML vvvvvvvvvvvvvvvvvvv");
+            Console.WriteLine(yml);
+            Console.WriteLine("^^^^^^^^^^^^^^^ YML ^^^^^^^^^^^^^^^^^^^");
+#endif
             var tags = GetAllTags(yml);
+#if CURIOUS
+            Console.WriteLine("vvvvvvvvvvvvvvv YML reconstituted vvvvvvvvvvvvvvvvvvv");
+            foreach (var taggy in tags)
+            {
+                Console.Write(taggy.ToString());
+            }
+            Console.WriteLine(yml);
+            Console.WriteLine("^^^^^^^^^^^^^^^ YML reconstituted ^^^^^^^^^^^^^^^^^^^");
+#endif
+
             var tagList = new List<Tag>();
             foreach (var t in tags)
             {
@@ -418,10 +313,9 @@ namespace MUT
         /// </summary>
         /// <param name="yml"></param>
         /// <returns></returns>
-        public List<string> GetAllTags(string yml)
+        public static List<string> GetAllTags(string yml)
         {
-            
-             var matches = Regex.Matches(yml, @"^[A-Za-z0-9\._]+:", RegexOptions.Multiline);
+            var matches = Regex.Matches(yml, @"^[A-Za-z0-9\._]+:", RegexOptions.Multiline);
             List<string> tags = new List<string>();
             foreach (Match m in matches)
             {
@@ -434,19 +328,20 @@ namespace MUT
         /// <summary>
         /// Gets a yml block from file including opening and closing "---" markers
         /// </summary>
-        /// <param name="file"></param>
+        /// <param name="filedata"></param>
         /// <returns></returns>
-        public string GetYmlBlock(string file)
+        public static string GetYmlBlock(string filedata)
         {
-            return file.Substring(0, file.IndexOf("---", 4) + 3);
+            return filedata.Substring(0, filedata.IndexOf("---", 4) + 3);
         }
 
 
         #endregion
 
-        #region CRUD operations
+#region CRUD operations
 
-        public string DeleteTagAndValue(string file, string tag)
+#if false
+        public static string DeleteTagAndValue(string file, string tag)
         {
             var pre = GetPrefix(file, tag);
             var suf = GetSuffix(file, tag);
@@ -455,7 +350,7 @@ namespace MUT
             return sb.ToString();
         }
 
-        public string ReplaceSingleValue(string file, string tag, string newVal)
+        public static string ReplaceSingleValue(string file, string tag, string newVal)
         {
             var pre = GetPrefix(file, tag);
             var suf = GetSuffix(file, tag);
@@ -475,7 +370,7 @@ namespace MUT
         /// <param name="tagName"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public string CreateTag(string file, string tagName, string value)
+        public static string CreateTag(string file, string tagName, string value)
         {
             // skip over opening "---" and find the next one
             int metadataEndPos = file.IndexOf("---", 4);
@@ -489,7 +384,7 @@ namespace MUT
         }
 
 
-        public string AddValueToMultiTag(string file, string tagName, string newVal)
+        public static string AddValueToMultiTag(string file, string tagName, string newVal)
         {
             var str = GetTagAndValue(file, tagName);
             var tag = new Tag(str);
@@ -502,7 +397,7 @@ namespace MUT
             else
             {
                 //TODO how to issue warnings? Log file?
-                Console.WriteLine("Warning: " + tag.Name +
+                Console.WriteLine("Warning: " + tag.name_ +
                     "in" + GetValue(file, "title") + "already has a value " + newVal);
             }
             tag.Values.Sort();
@@ -519,7 +414,7 @@ namespace MUT
         /// <param name="tagName"></param>
         /// <param name="val"></param>
         /// <returns>A string that represents the new tag.</returns>
-        public string DeleteValueFromMultiTag(string file, string tagName, string val)
+        public static string DeleteValueFromMultiTag(string file, string tagName, string val)
         {
             var str = GetTagAndValue(file, tagName);
             var tag = new Tag(str);
@@ -533,13 +428,14 @@ namespace MUT
             else
             {
                 //TODO how to issue warnings? Log file?
-                Console.WriteLine("Warning. Nothing to delete: " + tag.Name +
+                Console.WriteLine("Warning. Nothing to delete: " + tag.name_ +
                     "in" + GetValue(file, "title") + "does not contain a value " + val);
             }
 
             return tag.ToString();
         }
-        #endregion
+#endif
+#endregion
     }
 }
 
