@@ -10,7 +10,7 @@ namespace mdapply
 
     class Command
     {
-        public enum Action { ignore, create, overwrite, delete }
+        public enum Action { ignore, create, overwrite, delete, require, excise, merge_if, merge_add  }
 
         public string filename { get; set; }
         public Action action { get; set; }
@@ -36,6 +36,14 @@ namespace mdapply
                 result = Action.overwrite;
             else if (String.CompareOrdinal("delete", input.ToLower()) == 0)
                 result = Action.delete;
+            else if (String.CompareOrdinal("require", input.ToLower()) == 0)
+                result = Action.require;
+            else if (String.CompareOrdinal("excise", input.ToLower()) == 0)
+                result = Action.excise;
+            else if (String.CompareOrdinal("merge_if", input.ToLower()) == 0)
+                result = Action.merge_if;
+            else if (String.CompareOrdinal("merge_add", input.ToLower()) == 0)
+                result = Action.merge_add;
             else
             {
                 Console.WriteLine("Unexpected action {0}, treating as ignore.");
@@ -48,7 +56,7 @@ namespace mdapply
             var sb = new StringBuilder();
             sb.Append("filename: " + filename + " ");
             sb.Append("action: " + action.ToString() + " ");
-            sb.Append("tag: " + tagData.ToString());
+            sb.Append("tag: " + tagData.TagYMLFormatted());
             return sb.ToString();
         }
 

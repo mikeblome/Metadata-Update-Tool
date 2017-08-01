@@ -4,19 +4,36 @@ using DocoptNet;
 
 namespace mdapply
 {
+    using MUT;
     class Options
     {
         public readonly string usage = @"Usage: mdapply.exe <file> [--bracket | --dash]
 
 Options:
-  --bracket -b                Force multiline tags into bracketed lists
-  --dash -d                   Force multiline tags into dash lists
+  --bracket -b                Force multivalue tags into bracketed lists
+  --dash -d                   Force multivalue tags into dash lists
   --help -h -?                Show this usage statement
 ";
 
         public string ArgFile { get { return null == arguments["<file>"] ? null : arguments["<file>"].ToString(); } }
         public bool OptBracket { get { return arguments["--bracket"].IsTrue; } }
         public bool OptDash { get { return arguments["--dash"].IsTrue; } }
+
+        public Tag.TagFormatType OptFormat
+        {
+            get
+            {
+                if (OptBracket)
+                {
+                    return Tag.TagFormatType.bracket;
+                }
+                else if (OptDash)
+                {
+                    return Tag.TagFormatType.dash;
+                }
+                return Tag.TagFormatType.single;
+            }
+        }
 
         public Options(string[] args)
         {
