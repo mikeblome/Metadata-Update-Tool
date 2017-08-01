@@ -51,9 +51,9 @@ namespace MUT
                 sb.Append("\t");
                 sb.Append(tag.TagName);
                 sb.Append("\t");
-                sb.Append(tag.TagValuesExtractFormatted());
+                sb.Append(tag.TagValuesBracketedOrSingle());
                 sb.Append("\t");
-                sb.Append(tag.TagFormat);
+                sb.Append(tag.TagFormatString);
                 sb.Append(Environment.NewLine);
             }
 

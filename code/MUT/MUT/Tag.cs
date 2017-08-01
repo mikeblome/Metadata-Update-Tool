@@ -6,28 +6,34 @@
 
     public class Tag
     {
-        public enum FormatType { single, dash, bracket }
+        /// <summary>
+        /// Tag collections (sequences, mappings) can be in block style
+        /// or flow style. Block style is controlled by indentation,
+        /// and sequence elements are denoted by a leading dash-space, while 
+        /// mappings are denoted by a colon-space between key and value.
+        /// Flow style is controlled by explicit indicators, such
+        /// as square brackets containing comma-separated items
+        /// to denote a sequence, or a comma-separated list of key:value
+        /// pairs within curly braces to denote a mapping.
+        /// </summary>
+        public enum TagFormatType { single, dash, bracket }
 
-        // Private fields and properties
-        string name_;
-        List<string> values_;
-
-        FormatType useFormat{ get; set; }
 
 #region Properties
-        public string TagName { get { return name_; } }
-        public List<string> TagValues { get { return values_; } set { values_ = value; } }
-        public string TagFormat
+        public string TagName { get; set; }
+        public List<string> TagValues { get; set; }
+        public TagFormatType TagFormat{ get; set; }
+        public string TagFormatString
         {
             get
             {
-                switch (useFormat)
+                switch (TagFormat)
                 {
-                    case FormatType.bracket:
+                    case TagFormatType.bracket:
                         return "bracket";
-                    case FormatType.dash:
+                    case TagFormatType.dash:
                         return "dash";
-                    case FormatType.single:
+                    case TagFormatType.single:
                         return "single";
                     default:
                         return "";
@@ -36,14 +42,14 @@
             set
             {
                 if (String.IsNullOrEmpty(value) || String.CompareOrdinal("single", value.ToLower()) == 0)
-                    useFormat = FormatType.single;
+                    TagFormat = TagFormatType.single;
                 else if (String.CompareOrdinal("dash", value.ToLower()) == 0)
-                    useFormat = FormatType.dash;
+                    TagFormat = TagFormatType.dash;
                 else if (String.CompareOrdinal("bracket", value.ToLower()) == 0)
-                    useFormat = FormatType.bracket;
+                    TagFormat = TagFormatType.bracket;
                 else
                 {
-                    throw new ArgumentException("format must be single, bracket or dash");
+                    throw new ArgumentException("format must be empty, single, bracket, or dash");
                 }
             }
         }
@@ -51,9 +57,21 @@
 
         public Tag(string name, List<string> vals, string fmt)
         {
-            name_ = name;
-            values_ = vals;
-            TagFormat = fmt;
+            TagName = name;
+            TagValues = vals;
+            TagFormatString = fmt;
+            TagValidate();
+        }
+
+        private void TagValidate()
+        {
+            // TODO where to do this validation? In Tag ctor?
+            if (TagFormat == TagFormatType.single && TagValues.Count > 1)
+            {
+                TagFormat = TagFormatType.bracket;
+                Console.WriteLine("Warning: format was single but multiple values were found. " +
+                           "Changing format to bracket.");
+            }
         }
 
         /// <summary>
@@ -66,25 +84,10 @@
         /// <param name="fmt"></param>
         public Tag(string name, string vals, string fmt)
         {
-            name_ = name;
-            TagFormat = fmt;
-            values_ = new List<string>();
-            if (vals.Length > 0)
-            {
-                if (vals.Trim().StartsWith("[") && vals.EndsWith("]") && vals.Length > 2)
-                {
-                    // multi values in a single comma-separated string
-                    string temp = vals.TrimStart('[');
-                    temp = temp.TrimEnd(']');
-                    var valParts = temp.Split(',');
-                    foreach (var p in valParts)
-                    {
-                        values_.Add(p.Trim());
-                    }
-                }
-                else
-                    values_.Add(vals);
-            }
+            TagName = name;
+            TagValues = ValuesFromString(vals);
+            TagFormatString = fmt;
+            TagValidate();
         }
 
         /// <summary>
@@ -93,66 +96,78 @@
         /// <param name="tagAndVal"></param>
         public Tag(string tagAndVal)
         {
-            var parts = tagAndVal.Split('\n');
+            int idx = tagAndVal.IndexOf(':');
+            TagName = tagAndVal.Substring(0, idx).Trim();
+            TagValues = ValuesFromString(tagAndVal.Substring(idx + 1).Trim());
+        }
 
-            int idx = parts[0].IndexOf(':');
-            name_ = parts[0].Substring(0, idx);
-            string tagVal = parts[0].Substring(idx + 1).Trim();
-            useFormat = FormatType.single;
-            values_ = new List<string>();
-            if (tagVal.Length > 0)
+        public List<string> ValuesFromString(string valPart)
+        {
+            var result = new List<string>();
+            char[] splitset = { '\r', '\n' };
+            var lines = valPart.Split(splitset);
+            var firstLine = lines[0].Trim();
+            // If the first line of the value part is not empty,
+            if (firstLine.Length > 0)
             {
-                if (tagVal.Trim().StartsWith("[") && tagVal.EndsWith("]") && tagVal.Length > 2)
+                if (firstLine.StartsWith("[") && firstLine.EndsWith("]") && firstLine.Length > 2)
                 {
                     // multi values in a single comma-separated string
-                    useFormat = FormatType.bracket;
-                    string temp = tagVal.TrimStart('[');
+                    TagFormat = TagFormatType.bracket;
+                    string temp = firstLine.TrimStart('[');
                     temp = temp.TrimEnd(']');
-                    var valParts = temp.Split(',');
-                    foreach (var p in valParts)
+                    var items = temp.Split(',');
+                    foreach (var item in items)
                     {
-                        values_.Add(p.Trim());
+                        result.Add(item.Trim());
                     }
                 }
                 else
-                    values_.Add(tagVal);
+                {
+                    TagFormat = TagFormatType.single;
+                    result.Add(firstLine);
+                }
             }
             else
             {
-                useFormat = FormatType.dash;
+                TagFormat = TagFormatType.dash;
                 // dash formatted each val on separate line
-                // start on 1 because line zero was the tag itself
-                for (int i = 1; i < parts.Length; ++i)
+                // start on line 1 because line zero was empty
+                for (int i = 1; i < lines.Length; ++i)
                 {
-                    var s = parts[i].Replace("  - ", "");
-                    values_.Add(s.Trim());
+                    if (lines[i].Length > 0)
+                    {
+                        var s = lines[i].Replace("- ", "").Trim();
+                        result.Add(s);
+                    }
                 }
             }
+            return result;
         }
 
         /// <summary>
         /// Format values for YML file output (lists formatted according to TagFormat, hard returns)
         /// </summary>
         /// <returns>The values in a formatted string.</returns>
-        public string TagValuesYMLFormatted()
+        public string TagYMLFormatted()
         {
             var sb = new StringBuilder();
 
-            switch (useFormat)
+            sb.AppendFormat("{0}: ", TagName);
+
+            switch (TagFormat)
             {
-                case FormatType.bracket:
-                    FormatBracketed(sb);
-                    break;
-                case FormatType.dash:
-                    foreach (var item in values_)
+                case TagFormatType.dash:
+                    foreach (var item in TagValues)
                     {
                         sb.Append(Environment.NewLine);
                         sb.Append("  - " + item);
                     }
                     break;
-                case FormatType.single:
+                case TagFormatType.bracket:
+                case TagFormatType.single:
                 default:
-                    sb.Append(values_[0]);
+                    sb.Append(TagValuesBracketedOrSingle());
                     break;
             }
             sb.Append(Environment.NewLine);
@@ -163,37 +178,30 @@
         /// <summary>
         /// Format values for extracted file output (no hard return, lists bracketed).
         /// </summary>
-        /// <returns>The values in a formatted string.</returns>
-        public string TagValuesExtractFormatted()
+        /// <returns>The values in a bracket formatted string or a single unbracketed value.</returns>
+        public string TagValuesBracketedOrSingle()
         {
+            bool insertComma = false;
             var sb = new StringBuilder();
-
-            switch (useFormat)
+            switch (TagFormat)
             {
-                case FormatType.bracket:
-                case FormatType.dash:
-                    FormatBracketed(sb);
+                case TagFormatType.bracket:
+                case TagFormatType.dash:
+                    sb.Append("[");
+                    foreach (var item in TagValues)
+                    {
+                        if (insertComma) { sb.Append(", "); } else { insertComma = true; }
+
+                        sb.Append(item);
+                    }
+                    sb.Append("]");
                     break;
-                case FormatType.single:
+                case TagFormatType.single:
                 default:
-                    sb.Append(values_[0]);
+                    sb.Append(TagValues[0]);
                     break;
             }
-
             return sb.ToString();
-        }
-
-        private void FormatBracketed(StringBuilder sb)
-        {
-            bool addComma = false;
-            sb.Append("[");
-            foreach (var item in values_)
-            {
-                if (addComma) { sb.Append(", "); } else { addComma = true; }
-
-                sb.Append(item);
-            }
-            sb.Append("]");
         }
 
         /// <summary>
@@ -202,20 +210,7 @@
         /// <returns>The YML formatted metadata string.</returns>
         public override string ToString()
         {
-            // TODO were to do this validation? In Tag ctor?
-            if (useFormat == FormatType.single && values_.Count > 1)
-            {
-                useFormat = FormatType.bracket;
-                Console.WriteLine("Warning: format was single but multiple values were found. " +
-                           "Changing format to bracket. All values are written.");
-            }
-
-            // Init sb with tag name
-            StringBuilder sb = new StringBuilder(name_);
-            sb.Append(": ");
-            sb.Append(TagValuesYMLFormatted());
-
-            return sb.ToString();
+            return TagYMLFormatted();
         }
 
     }
