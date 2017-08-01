@@ -98,14 +98,15 @@
         {
             int idx = tagAndVal.IndexOf(':');
             TagName = tagAndVal.Substring(0, idx).Trim();
-            TagValues = ValuesFromString(tagAndVal.Substring(idx + 1).Trim());
+            TagValues = ValuesFromString(tagAndVal.Substring(idx + 1));
         }
 
         public List<string> ValuesFromString(string valPart)
         {
             var result = new List<string>();
-            char[] splitset = { '\r', '\n' };
-            var lines = valPart.Split(splitset);
+            char[] splitset = { '\n' };
+            valPart = valPart.Replace("\r", ""); 
+            var lines = valPart.Split('\n');
             var firstLine = lines[0].Trim();
             // If the first line of the value part is not empty,
             if (firstLine.Length > 0)
@@ -224,11 +225,13 @@
         public Tags()
         {
             this.tagList_ = new List<Tag>();
+            this.Changed = false;
         }
 
         public Tags(List<Tag> taglist)
         {
             this.tagList_ = taglist;
+            this.Changed = false;
         }
 
         public Tag TryGetTag(string tagname)
@@ -242,6 +245,8 @@
         }
 
         public int Count { get { return this.tagList_.Count; } }
+
+        public bool Changed { get; set; }
         
     }
 

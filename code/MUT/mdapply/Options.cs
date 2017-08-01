@@ -7,17 +7,19 @@ namespace mdapply
     using MUT;
     class Options
     {
-        public readonly string usage = @"Usage: mdapply.exe <file> [--bracket | --dash]
+        public readonly string usage = @"Usage: mdapply.exe <file> [--bracket | --dash] [--suffix <ext>]
 
 Options:
   --bracket -b                Force multivalue tags into bracketed lists
   --dash -d                   Force multivalue tags into dash lists
+  --suffix <ext>, -s <ext>    Add suffix extension to files changed
   --help -h -?                Show this usage statement
 ";
 
         public string ArgFile { get { return null == arguments["<file>"] ? null : arguments["<file>"].ToString(); } }
         public bool OptBracket { get { return arguments["--bracket"].IsTrue; } }
         public bool OptDash { get { return arguments["--dash"].IsTrue; } }
+        public string OptSuffix { get { return null == arguments["--suffix"] ? "" : arguments["--suffix"].ToString(); } }
 
         public Tag.TagFormatType OptFormat
         {
