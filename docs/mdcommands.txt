@@ -1,0 +1,9 @@
+FILENAME	ACTION	TAG	VALUE	FORMAT
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	title	"ARM Assembler Command-Line Reference | Microsoft Docs"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	create	ms.corob.rating	"Yowza, yowza, yowza!"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	OVERWRITE	ms.assetid	aaaaaaaa-aaaa-aaaa-aaaa-a805f0462c45	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	d	caps.latest.revision	12	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	force	author	"corob-msft"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	p	translation.priority.ht	["cs-cz", "it-it", "pt-br", "ru-ru", "tr-tr", "zh-cn", "zh-tw"]	dash
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	m	translation.priority.ht	["klingon-kh"]	bracket
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	m	something.random	["this should be ignored since it doesn't exist"]	bracket
