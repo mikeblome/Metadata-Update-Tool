@@ -1,0 +1,63 @@
+FILENAME	ACTION	TAG	VALUE	FORMAT
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	title	"ARM Assembler Command-Line Reference | Microsoft Docs"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	ms.custom	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	ms.date	"11/04/2016"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	ms.reviewer	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	ms.suite	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	ms.technology	["cpp-tools"]	dash
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	ms.tgt_pltfrm	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	create	ms.corob.rating	"Yowza, yowza, yowza!"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	ms.topic	"article"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	dev_langs	["C++"]	dash
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	ms.assetid	f7b89478-1ab5-4995-8cde-a805f0462c45	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	OVERWRITE	ms.assetid	aaaaaaaa-aaaa-aaaa-aaaa-a805f0462c45	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	caps.latest.revision	12	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	author	"corob-msft"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	ms.author	"corob"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	IGNORE	manager	"ghogen"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-command-line-reference.md	delete	translation.priority.ht	["cs-cz", "de-de", "es-es", "fr-fr", "it-it", "ja-jp", "ko-kr", "pl-pl", "pt-br", "ru-ru", "tr-tr", "zh-cn", "zh-tw"]	dash
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	title	"ARM Assembler Diagnostic Messages | Microsoft Docs"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	ms.custom	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	ms.date	"11/04/2016"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	ms.reviewer	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	ms.suite	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	ms.technology	["cpp-tools"]	dash
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	ms.tgt_pltfrm	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	ms.topic	"article"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	dev_langs	["C++"]	dash
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	ms.assetid	52b38267-6023-4bdc-a0ef-863362f48eec	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	caps.latest.revision	6	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	author	"corob-msft"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	ms.author	"corob"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	manager	"ghogen"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-diagnostic-messages.md	IGNORE	translation.priority.ht	["cs-cz", "de-de", "es-es", "fr-fr", "it-it", "ja-jp", "ko-kr", "pl-pl", "pt-br", "ru-ru", "tr-tr", "zh-cn", "zh-tw"]	dash
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	title	"ARM Assembler Directives | Microsoft Docs"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	ms.custom	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	ms.date	"11/04/2016"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	ms.reviewer	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	ms.suite	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	ms.technology	["cpp-tools"]	dash
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	ms.tgt_pltfrm	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	ms.topic	"article"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	dev_langs	["C++"]	dash
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	ms.assetid	9cfa8896-ec10-4e77-855a-3135c40d7d2a	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	caps.latest.revision	5	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	author	"corob-msft"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	ms.author	"corob"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	manager	"ghogen"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-directives.md	IGNORE	translation.priority.ht	["cs-cz", "de-de", "es-es", "fr-fr", "it-it", "ja-jp", "ko-kr", "pl-pl", "pt-br", "ru-ru", "tr-tr", "zh-cn", "zh-tw"]	dash
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	title	"ARM Assembler Reference | Microsoft Docs"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	ms.custom	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	ms.date	"11/04/2016"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	ms.reviewer	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	ms.suite	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	ms.technology	["cpp-tools"]	dash
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	ms.tgt_pltfrm	""	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	ms.topic	"article"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	dev_langs	["C++"]	dash
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	ms.assetid	f8a076cc-9627-4328-a34a-9c44f7a3aab1	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	caps.latest.revision	13	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	author	"corob-msft"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	ms.author	"corob"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	manager	"ghogen"	single
+C:\gh\Microsoft\vcppdocs\docs\assembler\arm\arm-assembler-reference.md	IGNORE	translation.priority.ht	["cs-cz", "de-de", "es-es", "fr-fr", "it-it", "ja-jp", "ko-kr", "pl-pl", "pt-br", "ru-ru", "tr-tr", "zh-cn", "zh-tw"]	dash
