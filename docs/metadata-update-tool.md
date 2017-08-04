@@ -56,17 +56,18 @@ Each row in the output contains the following tab-delimited ordered set of field
 The action field controls the behavior of the mdapply tool. By default, the mdextract tool sets this field to IGNORE, or empty, which specifies no change. Case is not significant in the action field.  
   
 The action keywords and synonyms, and their meanings, are:  
-|||
-|---|---|  
-|A, add, create|Add tag using specified values only if tag does not already exist; leave an existing tag alone. |  
-|D, delete|Unconditional delete of tag if it exists |  
-|P, partial, excise|Partial delete of only specified values from tag, leaving tag and other values only if other values remain, deleting tag if it is now empty.|  
-|O, require, force|Unconditional overwrite of values in tag, or add tag using specified values if it does not exist.|  
-|X, overwrite|Unconditional overwrite of values in tag only if tag exists; do not add tag if it does not exist. |  
-|M, merge, merge_if|Merge unique specified values into tag, only if tag exists; do not add tag if it does not exist. |  
-|U, update, merge_add|Merge unique specified values into tag, or add tag using all specified values if it does not exist.|  
   
-You can have more than one row that applies to the same metadata tag, for example, where one row uses a P actopn to delete specific values, and another uses the M action to add specific values, leaving any other values unchanged.  
+|||  
+|---|---|  
+| A, add, create | Add tag using specified values only if tag does not already exist; leave an existing tag alone. |  
+| D, delete | Unconditional delete of tag if it exists. |  
+| P, partial, excise | Partial delete of only specified values from tag, leaving tag and other values only if other values remain, deleting tag if it is now empty. |  
+| O, require, force | Unconditional overwrite of values in tag, or add tag using specified values if it does not exist. |  
+| X, overwrite | Unconditional overwrite of values in tag only if tag exists; do not add tag if it does not exist. |  
+| M, merge, merge_if | Merge unique specified values into tag, only if tag exists; do not add tag if it does not exist. |  
+| U, update, merge_add | Merge unique specified values into tag, or add tag using all specified values if it does not exist. |  
+  
+You can have more than one row that applies to the same metadata tag, for example, where one row uses a P action to delete specific values, and another uses the M action to add specific values, leaving any other values unchanged.  
   
 The format field also controls the behavior of the mdapply tool. Case is not significant in this field. By default, this field is empty or “single”, which implies a single value on the same line. An entry of “dash” specifies the value collection is dash-delimited entries on the following lines. An entry in the field of "bracket" specifies the value collection is a bracketed collection of entries on the same line.  
   
