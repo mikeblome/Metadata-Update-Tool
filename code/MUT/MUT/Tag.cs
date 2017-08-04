@@ -49,7 +49,7 @@
                     TagFormat = TagFormatType.bracket;
                 else
                 {
-                    throw new ArgumentException("format must be empty, single, bracket, or dash");
+                    throw new ArgumentException("format must be <empty>, single, bracket, or dash");
                 }
             }
         }

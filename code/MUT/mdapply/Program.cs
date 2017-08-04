@@ -19,7 +19,9 @@ namespace mdapply
             var opts = new Options(args);
 
             // For debugging, remove from production
+#if DEBUG
             opts.PrintOptions();
+#endif
 
             var y = new YMLMeister();
             var currentFile = "";
@@ -27,8 +29,18 @@ namespace mdapply
             var currentBody = "";
             var currentTagList = new Tags();
             Command command = null;
+            string commandFile = "";
 
-            string commandFile = File.ReadAllText(opts.ArgFile);
+            try
+            {
+                commandFile = File.ReadAllText(opts.ArgFile);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Unable to read command file {0}", opts.ArgFile);
+                Console.WriteLine(e.Message);
+                System.Environment.Exit(1);
+            }
 
             var commandRecords = commandFile.Split('\n');
             foreach(var commandRecord in commandRecords)
@@ -36,7 +48,17 @@ namespace mdapply
                 var trimmedCommand = commandRecord.Trim();
                 if (!String.IsNullOrEmpty(trimmedCommand) && trimmedCommand != CommandBuilder.Header)
                 {
-                    command = new Command(trimmedCommand);
+                    try
+                    {
+                        command = new Command(trimmedCommand);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Unable to read command {0}", trimmedCommand);
+                        Console.WriteLine(e.Message);
+                        continue;
+                    }
+
                     if (currentFile != "" && currentFile != command.filename)
                     {
                         WriteCurrentFile(opts, currentFile, currentBody, currentTagList);
@@ -128,10 +150,10 @@ namespace mdapply
 
         private static void DeleteTag(Tags currentTagList, Command command)
         {
-            var tagToDelete = currentTagList.TryGetTag(command.tagData.TagName);
-            if (null != tagToDelete)
+            var tagItem = currentTagList.TryGetTag(command.tagData.TagName);
+            if (null != tagItem)
             {
-                currentTagList.TagList.Remove(tagToDelete);
+                currentTagList.TagList.Remove(tagItem);
                 currentTagList.Changed = true;
                 Console.WriteLine("Removing a {0} tag from {1}",
                     command.tagData.TagName, command.filename);
@@ -145,11 +167,11 @@ namespace mdapply
 
         private static void OverwriteIfTagExists(Tags currentTagList, Command command)
         {
-            var tagToOverwrite = currentTagList.TryGetTag(command.tagData.TagName);
-            if (null != tagToOverwrite)
+            var tagItem = currentTagList.TryGetTag(command.tagData.TagName);
+            if (null != tagItem)
             {
-                tagToOverwrite.TagValues = command.tagData.TagValues;
-                tagToOverwrite.TagFormat = command.tagData.TagFormat;
+                tagItem.TagValues = command.tagData.TagValues;
+                tagItem.TagFormat = command.tagData.TagFormat;
                 currentTagList.Changed = true;
                 Console.WriteLine("Overwriting the {0} tag in {1}",
                     command.tagData.TagName, command.filename);
@@ -163,11 +185,11 @@ namespace mdapply
 
         private static void OverwriteOrAddTag(Tags currentTagList, Command command)
         {
-            var tagToRequire = currentTagList.TryGetTag(command.tagData.TagName);
-            if (null != tagToRequire)
+            var tagItem = currentTagList.TryGetTag(command.tagData.TagName);
+            if (null != tagItem)
             {
-                tagToRequire.TagValues = command.tagData.TagValues;
-                tagToRequire.TagFormat = command.tagData.TagFormat;
+                tagItem.TagValues = command.tagData.TagValues;
+                tagItem.TagFormat = command.tagData.TagFormat;
                 currentTagList.Changed = true; // Might actually be the same.
                 Console.WriteLine("Replacing the {0} tag in {1}",
                     command.tagData.TagName, command.filename);
@@ -183,19 +205,19 @@ namespace mdapply
 
         private static void MergeValuesOrAddTag(Tags currentTagList, Command command)
         {
-            var tagToMergeTo = currentTagList.TryGetTag(command.tagData.TagName);
-            if (null != tagToMergeTo)
+            var tagItem = currentTagList.TryGetTag(command.tagData.TagName);
+            if (null != tagItem)
             {
-                if (tagToMergeTo.TagFormat != command.tagData.TagFormat)
+                if (tagItem.TagFormat != command.tagData.TagFormat)
                 {
-                    tagToMergeTo.TagFormat = command.tagData.TagFormat;
+                    tagItem.TagFormat = command.tagData.TagFormat;
                     currentTagList.Changed = true;
                 }
                 foreach (var val in command.tagData.TagValues)
                 {
-                    if (!tagToMergeTo.TagValues.Contains(val))
+                    if (!tagItem.TagValues.Contains(val))
                     {
-                        tagToMergeTo.TagValues.Add(val);
+                        tagItem.TagValues.Add(val);
                         currentTagList.Changed = true;
                     }
                 }
@@ -213,19 +235,19 @@ namespace mdapply
 
         private static void MergeValuesIfTagExists(Tags currentTagList, Command command)
         {
-            var tagToMergeInto = currentTagList.TryGetTag(command.tagData.TagName);
-            if (null != tagToMergeInto)
+            var tagItem = currentTagList.TryGetTag(command.tagData.TagName);
+            if (null != tagItem)
             {
-                if (tagToMergeInto.TagFormat != command.tagData.TagFormat)
+                if (tagItem.TagFormat != command.tagData.TagFormat)
                 {
-                    tagToMergeInto.TagFormat = command.tagData.TagFormat;
+                    tagItem.TagFormat = command.tagData.TagFormat;
                     currentTagList.Changed = true;
                 }
                 foreach (var val in command.tagData.TagValues)
                 {
-                    if (!tagToMergeInto.TagValues.Contains(val))
+                    if (!tagItem.TagValues.Contains(val))
                     {
-                        tagToMergeInto.TagValues.Add(val);
+                        tagItem.TagValues.Add(val);
                         currentTagList.Changed = true;
                     }
                 }
@@ -241,16 +263,16 @@ namespace mdapply
 
         private static void ExciseValues(Tags currentTagList, Command command)
         {
-            var tagToExciseFrom = currentTagList.TryGetTag(command.tagData.TagName);
-            if (null != tagToExciseFrom)
+            var tagItem = currentTagList.TryGetTag(command.tagData.TagName);
+            if (null != tagItem)
             {
                 var newTagValues = new List<string>();
-                if (tagToExciseFrom.TagFormat != command.tagData.TagFormat)
+                if (tagItem.TagFormat != command.tagData.TagFormat)
                 {
-                    tagToExciseFrom.TagFormat = command.tagData.TagFormat;
+                    tagItem.TagFormat = command.tagData.TagFormat;
                     currentTagList.Changed = true;
                 }
-                foreach (var val in tagToExciseFrom.TagValues)
+                foreach (var val in tagItem.TagValues)
                 {
                     if (!command.tagData.TagValues.Contains(val))
                     {
@@ -264,13 +286,13 @@ namespace mdapply
 
                 if (newTagValues.Count > 0)
                 {
-                    tagToExciseFrom.TagValues = newTagValues;
+                    tagItem.TagValues = newTagValues;
                     Console.WriteLine("Excising from {0} tag in {1}",
                         command.tagData.TagName, command.filename);
                 }
                 else
                 {
-                    currentTagList.TagList.Remove(tagToExciseFrom);
+                    currentTagList.TagList.Remove(tagItem);
                     Console.WriteLine("Excised entire {0} tag from {1}",
                         command.tagData.TagName, command.filename);
                 }
