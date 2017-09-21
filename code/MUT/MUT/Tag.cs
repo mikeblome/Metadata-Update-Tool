@@ -138,7 +138,8 @@
                 {
                     if (lines[i].Length > 0)
                     {
-                        var s = lines[i].Replace("- ", "").Trim();
+                        // remove leading dash, trim result
+                        var s = lines[i].Substring(lines[i].IndexOf('-') + 1).Trim();
                         result.Add(s);
                     }
                 }
