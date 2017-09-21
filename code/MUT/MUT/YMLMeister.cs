@@ -1,8 +1,13 @@
-﻿using System;
+﻿//#define CURIOUS
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
+
+
 
 namespace MUT
 {
@@ -43,21 +48,26 @@ namespace MUT
         /// <returns></returns>
         public static int GetTagValueEndPos(string filedata, int startPos)
         {
-            // Get the upper bound of metadata block to 
-            // prevent searches over entire content and the 
-            // false hits that could generate
-            int lineEnd = lineEnd = filedata.IndexOf("\n", startPos);
+            // Find the next line end
+            int lineEnd = filedata.IndexOf("\n", startPos);
             if (!IsMultilineValue(filedata, startPos))
             {
+                // tag and value is all one one line
                 return lineEnd + 1; // include the last \n
             }
 
-            // look for next tag, or end of metadata block.
+            // look for beginning of next tag, or end of metadata block.
+            // everything between lineEnd and the beginning of next tag should
+            // be all the values in the current tag.
             // we search a substring, because Match method
             // doeesn't allow us to specify a startingPos for the search.
             // the substring's zero element is really lineEnd
             // in the original string. subtract 1 to backtrack over the \n
-            int ret = Regex.Match(filedata.Substring(lineEnd), @"([A-Za-z\._]+:)|(---)").Index;
+
+            string textToSearch = filedata.Substring(lineEnd);
+            var m = Regex.Match(textToSearch, @"(^[A-Za-z\._]+: )|(---$)", RegexOptions.Multiline);
+            
+            int ret = m.Index;
             return ret + lineEnd - 1;
             
         }
@@ -319,7 +329,8 @@ namespace MUT
             List<string> tags = new List<string>();
             foreach (Match m in matches)
             {
-                tags.Add(GetTagAndValue( yml, m.Index));
+                string tagVal = GetTagAndValue(yml, m.Index);
+                tags.Add(tagVal);
             }
 
             return tags;

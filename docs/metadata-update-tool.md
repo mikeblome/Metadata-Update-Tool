@@ -7,12 +7,12 @@ When you need to update OPS metadata across a number of Markdown files in an OPS
 The general process is:  
   
 1. Create a GitHub branch for the metadata work. This keeps the metadata updates separated from other changes.  
-1. Use mdextract.exe to generate an Excel spreadsheet (a tab-delimited text file) containing the metadata for the files you are working with.  
-1. Use Excel to perform metadata updates.  
-1. Apply those updates using the mdapply.exe tool.  
-1. Commit the changes and push them to the remote repo.  
-1. Create a pull request from the branch you created to the original branch (e.g., master).  
-1. Scan the diffs to verify that the metadata changes are what you expect.  
+2. Use mdextract.exe to generate an Excel spreadsheet (a tab-delimited text file) containing the metadata for the files you are working with.  
+3. Use Excel to perform metadata updates.  
+4. Apply those updates using the mdapply.exe tool.  
+5. Commit the changes and push them to the remote repo.  
+6. Create a pull request from the branch you created to the original branch (e.g., master).  
+7. Scan the diffs to verify that the metadata changes are what you expect.  
   
 If you are using VS Code to edit Markdown files, you can run the command line tools from VS Code.  
   
