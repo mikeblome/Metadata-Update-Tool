@@ -28,8 +28,20 @@ namespace Tests
             YMLMeister YMLMeister= new YMLMeister();
             string f = @"../../abstract-classes-cpp.md";
             string content = File.ReadAllText(f);
-            string tag = "dev_langs";
+            string tag = "helpviewer_keywords";
             Assert.IsTrue(YMLMeister.IsMultilineValue(content, tag));
+        }
+
+        [TestMethod]
+        public void TestMultilineValue2()
+        {
+            YMLMeister YMLMeister = new YMLMeister();
+            string f = @"../../cmfcbutton-class.md";
+            string content = File.ReadAllText(f);
+            string tag = "helpviewer_keywords";
+            int start = content.IndexOf(tag);
+            var result = YMLMeister.GetTagAndValue(content, start);
+            Assert.IsTrue(result.Length > tag.Length + 8); //for a specific bug now fixed
         }
 
         [TestMethod]
@@ -272,6 +284,12 @@ namespace Tests
                     Debug.WriteLine("   " + v2);
                 }
             }
+        }
+
+        [TestMethod]
+        public void TestMdApply()
+        {
+        
         }
     }
 }
