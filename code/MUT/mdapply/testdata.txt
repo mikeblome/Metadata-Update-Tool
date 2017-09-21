@@ -1,0 +1,3 @@
+..\..\abstract-classes-cpp.md	partial	helpviewer_keywords	"test value"	dash
+..\..\abstract-classes-cpp.md	merge	helpviewer_keywords	"another test value"	dash
+..\..\abstract-classes-cpp.md	merge	dev_langs	"C#"	dash
