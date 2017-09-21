@@ -1,15 +1,11 @@
 ﻿using System;
-
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MUT;
 using System.IO;
+using System.Text;
 
-namespace mdapply
+namespace MdApply
 {
-    using MUT;
+    using MdExtract;
 
     class Program
     {
@@ -31,7 +27,7 @@ namespace mdapply
             Command command = null;
             string commandFile = "";
 
-            try
+           try
             {
                 commandFile = File.ReadAllText(opts.ArgFile);
             }
@@ -63,6 +59,7 @@ namespace mdapply
                     {
                         WriteCurrentFile(opts, currentFile, currentBody, currentTagList);
                     }
+
                     if (currentFile != command.filename)
                     {
                         currentFile = command.filename;
@@ -70,6 +67,7 @@ namespace mdapply
                         currentTagList = new Tags(YMLMeister.ParseYML2(currentContent));
                         currentBody = currentContent.Substring(currentContent.IndexOf("---", 4) + 3);
                     }
+
                     switch (command.action)
                     {
                         case Command.Action.create:
@@ -98,15 +96,14 @@ namespace mdapply
                                 command.tagData.TagName, command.filename);
                             break;
                     }
-
                 }
             }
+
             if (command != null && currentFile != "")
             {
                 // We're done, write the file out, if there's anything to write.
                 WriteCurrentFile(opts, currentFile, currentBody, currentTagList);
             }
-
 
             // open commands file or report failure and exit
             // create objects for applies-to file, metadata collection
@@ -129,7 +126,6 @@ namespace mdapply
             // debug trap so you can see it at work; remove from production
             //Console.Write("Press any key to continue... ... ...");
             //Console.ReadLine();
-
         }
 
         private static void AddTagIfNotPresent(Tags currentTagList, Command command)
@@ -339,3 +335,4 @@ namespace mdapply
         }
     }
 }
+
