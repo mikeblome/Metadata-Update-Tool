@@ -13,10 +13,8 @@ namespace MUT
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
 
 
     public class YMLMeister
@@ -33,8 +31,8 @@ namespace MUT
             // Get the upper bound of metadata block to 
             // prevent searches over entire content and the 
             // false hits that could generate
-            int metadataEndPos = filedata.IndexOf("---", 4);
-            return filedata.IndexOf(tag, 4, metadataEndPos - 4);
+            int metadataEndPos = filedata.IndexOf("\n---", 4) + 1;
+            return filedata.IndexOf("\n" + tag, 3, metadataEndPos) + 1;
         }
 
         /// <summary>
@@ -65,7 +63,7 @@ namespace MUT
             // in the original string. subtract 1 to backtrack over the \n
 
             string textToSearch = filedata.Substring(lineEnd);
-            var m = Regex.Match(textToSearch, @"(^[A-Za-z\._]+: )|(---$)", RegexOptions.Multiline);
+            var m = Regex.Match(textToSearch, @"(^[\w\.-]+:)|(---$)", RegexOptions.Multiline);
             
             int ret = m.Index;
             return ret + lineEnd - 1;
@@ -73,10 +71,10 @@ namespace MUT
         }
 
         /// <summary>
-        ///     Gets the tag itself, and its value
+        ///     Gets the tag itself, and its (possibly multi-line) value
         /// </summary>
         /// <param name="filedata"></param>
-        /// <param name="tag"></param>
+        /// <param name="beg"></param>
         /// <returns></returns>
         public static string GetTagAndValue(string filedata, int beg)
         {
@@ -177,7 +175,7 @@ namespace MUT
 
             // yes, then sanity check: is the next line a new tag?
             string nextLine = filedata.Substring(end + 1, filedata.IndexOf("\n", end + 1));
-            if (Regex.IsMatch(nextLine, @"^[A_Za-z0-9\._-]+:"))
+            if (Regex.IsMatch(nextLine, @"^[\w\.-]+:"))
             {
                 // tag is a single value 
                 return false;
@@ -205,7 +203,7 @@ namespace MUT
                 return false; // we must be at the end of the block
             }
             string nextLine = filedata.Substring(end + 1, idx - end);
-            if (Regex.IsMatch(nextLine, @"^[A_Za-z0-9\._-]+:"))
+            if (Regex.IsMatch(nextLine, @"^[\w\.-]+:"))
             {
                 // tag is a single value 
                 return false;
@@ -321,11 +319,11 @@ namespace MUT
         /// <summary>
         /// Gets all tags and their values in the yml block.
         /// </summary>
-        /// <param name="yml"></param>
+        /// <param name="yml">The entire yaml block, including leading and trailing '---' strings.</param>
         /// <returns></returns>
         public static List<string> GetAllTags(string yml)
         {
-            var matches = Regex.Matches(yml, @"^[A-Za-z0-9\._]+:", RegexOptions.Multiline);
+            var matches = Regex.Matches(yml, @"^[\w\.-]+:", RegexOptions.Multiline);
             List<string> tags = new List<string>();
             foreach (Match m in matches)
             {
@@ -343,11 +341,11 @@ namespace MUT
         /// <returns></returns>
         public static string GetYmlBlock(string filedata)
         {
-            return filedata.Substring(0, filedata.IndexOf("---", 4) + 3);
+            return filedata.Substring(0, filedata.IndexOf("\n---", 4) + 4);
         }
 
 
-        #endregion
+#endregion
 
 #region CRUD operations
 
