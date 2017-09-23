@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace mdapply
+namespace MdApply
 {
-    using MUT;
+    using MdExtract;
 
     class Command
     {

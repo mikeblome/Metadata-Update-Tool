@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{003CAD5C-B933-4C0F-85E3-DA6CD2AF1A3A}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>mdapply</RootNamespace>
+    <RootNamespace>MdApply</RootNamespace>
     <AssemblyName>mdapply</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -58,7 +58,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

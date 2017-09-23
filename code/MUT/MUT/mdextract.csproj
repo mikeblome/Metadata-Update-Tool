@@ -7,7 +7,7 @@
     <ProjectGuid>{B44B4724-2736-4CAD-9EAD-4D3718C1574D}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>MUT</RootNamespace>
-    <AssemblyName>MUT</AssemblyName>
+    <AssemblyName>mdextract</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -56,8 +56,12 @@
     <Compile Include="YMLMeister.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
