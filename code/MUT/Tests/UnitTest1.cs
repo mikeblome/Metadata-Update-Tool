@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.RegularExpressions;
-using MUT;
+using MdExtract;
 
 namespace Tests
 {
