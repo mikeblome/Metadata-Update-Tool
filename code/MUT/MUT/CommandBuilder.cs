@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
 
-namespace MUT
+namespace MdExtract
 {
     public class CommandBuilder
     {
@@ -14,16 +10,16 @@ namespace MUT
 
         public static readonly string Header = "FILENAME\tACTION\tTAG\tVALUE\tFORMAT";
 
-        public string outputFile { get; private set; }
+        public string OutputFile { get; private set; }
 
         public CommandBuilder(string filename)
         {
-            this.outputFile = filename;
+            this.OutputFile = filename;
             this.sb = new StringBuilder(Header);
             this.sb.Append(Environment.NewLine);
         }
 
-        public bool ParseFile(string filename)
+        public void ParseFile(string filename)
         {
             string filedata = File.ReadAllText(filename);
 
@@ -35,8 +31,7 @@ namespace MUT
             if ((beg == -1) || (end == -1))
             {
                 Console.WriteLine("CommandBuilder: could not find metadata section in {0}", filename);
-
-                return false;
+                return;
             }
 
             // Parse YML into a list of Tag objects
@@ -57,23 +52,21 @@ namespace MUT
                 sb.Append(Environment.NewLine);
             }
 
-            return true;
+            return;
         }
 
         public void WriteFile(bool toOutputFile)
         {
-            if (toOutputFile && !String.IsNullOrEmpty(outputFile))
+            if (toOutputFile && !String.IsNullOrEmpty(OutputFile))
             {
                 // write to the specified file
-                File.WriteAllText(outputFile, sb.ToString());
+                File.WriteAllText(OutputFile, sb.ToString());
             }
             else
             {
                 // else write sb to console.
                 Console.WriteLine(sb.ToString());
             }
-
         }
-
     }
 }

@@ -1,12 +1,11 @@
-﻿using System;
+﻿using MdExtract;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
 namespace MdApply
 {
-    using MdExtract;
-
     class Program
     {
         static void Main(string[] args)
@@ -27,7 +26,7 @@ namespace MdApply
             Command command = null;
             string commandFile = "";
 
-           try
+            try
             {
                 commandFile = File.ReadAllText(opts.ArgFile);
             }
@@ -35,11 +34,13 @@ namespace MdApply
             {
                 Console.WriteLine("Unable to read command file {0}", opts.ArgFile);
                 Console.WriteLine(e.Message);
+                Console.WriteLine("Press any key to continue...");
+                Console.ReadLine();
                 System.Environment.Exit(1);
             }
 
             var commandRecords = commandFile.Split('\n');
-            foreach(var commandRecord in commandRecords)
+            foreach (var commandRecord in commandRecords)
             {
                 var trimmedCommand = commandRecord.Trim();
                 if (!String.IsNullOrEmpty(trimmedCommand) && trimmedCommand != CommandBuilder.Header)
@@ -63,7 +64,16 @@ namespace MdApply
                     if (currentFile != command.filename)
                     {
                         currentFile = command.filename;
-                        currentContent = File.ReadAllText(currentFile);
+
+                        try
+                        {
+                            currentContent = File.ReadAllText(currentFile);
+                        }
+                        catch (System.IO.FileNotFoundException)
+                        {
+                            // Log it?
+                            continue;
+                        }
                         currentTagList = new Tags(YMLMeister.ParseYML2(currentContent));
                         currentBody = currentContent.Substring(currentContent.IndexOf("---", 4) + 3);
                     }
@@ -123,9 +133,7 @@ namespace MdApply
             //   close current applies-to file
             // report complete and exit
 
-            // debug trap so you can see it at work; remove from production
-            //Console.Write("Press any key to continue... ... ...");
-            //Console.ReadLine();
+            Console.ReadLine();
         }
 
         private static void AddTagIfNotPresent(Tags currentTagList, Command command)
@@ -290,7 +298,7 @@ namespace MdApply
                 {
                     currentTagList.TagList.Remove(tagItem);
                     Console.WriteLine("Excised entire {0} tag from {1}",
-                        command.tagData.TagName, command.filename);
+                         command.tagData.TagName, command.filename);
                 }
             }
             else
@@ -323,8 +331,8 @@ namespace MdApply
                     var tagOutput = currentTag.ToString();
                     newContent.Append(tagOutput);
                 }
-
             }
+
             newContent.Append("---");
             newContent.Append(currentBody);
 
@@ -335,4 +343,3 @@ namespace MdApply
         }
     }
 }
-

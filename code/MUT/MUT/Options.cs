@@ -1,14 +1,11 @@
-﻿using System;
+﻿using DocoptNet;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using DocoptNet;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MUT
+namespace MdExtract
 {
-    class Options
+    public class Options
     {
         public readonly string usage = @"Usage: mdextract.exe [--path <path>] [--recurse] [--file <file>] [--output <name>]
 
@@ -19,31 +16,34 @@ Options:
   --output <name>, -o <name>  Output file
   --help -h -?                Show this usage statement
 ";
-        public string path
+        public string Path
         {
             get { return (null == arguments["--path"]) ? null : arguments["--path"].ToString(); }
         }
-        public SearchOption recurse
+        public SearchOption Recurse
         {
             get { return (arguments["--recurse"].IsTrue) ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly; }
         }
-        public string file
+        public string File
         {
             get { return (null == arguments["--file"]) ? null : arguments["--file"].ToString(); }
         }
-        public bool use_output
+        public bool Use_output
         {
-            get { return arguments.ContainsKey("--output") && !(null == arguments["--output"]) && !("" == arguments["--output"].ToString()); }
+            get
+            {
+                return arguments.ContainsKey("--output") && !String.IsNullOrEmpty(GetOutput());
+            }
         }
-        public string output
+
+        public string GetOutput()
         {
-            get { return (null == arguments["--output"]) ? null : arguments["--output"].ToString(); }
+            return (null == arguments["--output"]) ? String.Empty : arguments["--output"].ToString();
         }
 
         public Options(string[] args)
         {
-            arguments = new Docopt().Apply(usage, args, version: "mdextract 0.1", exit: true);
-
+            arguments = new Docopt().Apply(usage, args, version: "mdextract 0.1", exit: false);
         }
 
         public void PrintOptions()
@@ -58,7 +58,7 @@ Options:
 
         public IEnumerable<string> GetFiles()
         {
-            return Directory.EnumerateFiles(this.path, this.file, this.recurse);
+            return Directory.EnumerateFiles(this.Path, this.File, this.Recurse);
         }
 
         private IDictionary<string, ValueObject> arguments { get; set; }

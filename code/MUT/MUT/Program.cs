@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace MUT
+namespace MdExtract
 {
-
     class Program
     {
         static void Main(string[] args)
@@ -20,7 +14,7 @@ namespace MUT
 
             // Extract YML header values for output
             StringBuilder sb = new StringBuilder();
-            var cb = new CommandBuilder(opts.output);
+            var cb = new CommandBuilder(opts.GetOutput());
 
             // Parse each file in the list
             foreach (var filename in fileArray)
@@ -29,7 +23,9 @@ namespace MUT
             }
 
             // Write results to the output file or stdout
-            cb.WriteFile(opts.use_output);
+            cb.WriteFile(opts.Use_output);
+
+            Console.WriteLine("Output was successfully written to {0}.", cb.OutputFile);
 
             // debug trap so you can see it at work; remove from production
             Console.WriteLine("Press any key to continue... ... ...");

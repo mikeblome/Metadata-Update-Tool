@@ -1,11 +1,11 @@
-﻿using System;
+﻿using DocoptNet;
+using MdExtract;
+using System;
 using System.Collections.Generic;
-using DocoptNet;
 
-namespace mdapply
+namespace MdApply
 {
-    using MUT;
-    class Options
+    public class Options
     {
         public readonly string usage = @"Usage: mdapply.exe <file> [--bracket | --dash] [--suffix <ext>]
 
@@ -40,7 +40,6 @@ Options:
         public Options(string[] args)
         {
             arguments = new Docopt().Apply(usage, args, version: "mdapply 0.1", exit: true);
-
         }
 
         public void PrintOptions()

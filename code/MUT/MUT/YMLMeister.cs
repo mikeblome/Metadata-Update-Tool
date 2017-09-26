@@ -6,16 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
-
-
-namespace MUT
+namespace MdExtract
 {
     using System;
     using System.Collections.Generic;
-    using System.Text;
     using System.Text.RegularExpressions;
-
 
     public class YMLMeister
     {
@@ -64,10 +59,9 @@ namespace MUT
 
             string textToSearch = filedata.Substring(lineEnd);
             var m = Regex.Match(textToSearch, @"(^[\w\.-]+:)|(---$)", RegexOptions.Multiline);
-            
+
             int ret = m.Index;
             return ret + lineEnd - 1;
-            
         }
 
         /// <summary>
@@ -81,7 +75,6 @@ namespace MUT
             int end = GetTagValueEndPos(filedata, beg);
             return filedata.Substring(beg, end - beg);
         }
-
 
         /// <summary>
         ///     Gets the tag itself, and its value
@@ -186,7 +179,6 @@ namespace MUT
 
         public static bool IsMultilineValue(string filedata, int start)
         {
-
             int end = filedata.IndexOf("\n", start);
             var line = filedata.Substring(start, end - start);
 
@@ -202,6 +194,7 @@ namespace MUT
             {
                 return false; // we must be at the end of the block
             }
+
             string nextLine = filedata.Substring(end + 1, idx - end);
             if (Regex.IsMatch(nextLine, @"^[\w\.-]+:"))
             {
@@ -315,7 +308,6 @@ namespace MUT
             return tagList;
         }
 
-        
         /// <summary>
         /// Gets all tags and their values in the yml block.
         /// </summary>
@@ -332,7 +324,7 @@ namespace MUT
             }
 
             return tags;
-         }
+        }
 
         /// <summary>
         /// Gets a yml block from file including opening and closing "---" markers
@@ -343,11 +335,9 @@ namespace MUT
         {
             return filedata.Substring(0, filedata.IndexOf("\n---", 4) + 4);
         }
+        #endregion
 
-
-#endregion
-
-#region CRUD operations
+        #region CRUD operations
 
 #if false
         public static string DeleteTagAndValue(string file, string tag)
@@ -444,7 +434,6 @@ namespace MUT
             return tag.ToString();
         }
 #endif
-#endregion
+        #endregion
     }
 }
-
