@@ -14,7 +14,7 @@ namespace MdExtract
 
             // Extract YML header values for output
             StringBuilder sb = new StringBuilder();
-            var cb = new CommandBuilder(opts.GetOutput());
+            var cb = new CommandBuilder(opts.GetOutput(), opts.Tag);
 
             // Parse each file in the list
             foreach (var filename in fileArray)

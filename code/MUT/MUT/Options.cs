@@ -7,13 +7,15 @@ namespace MdExtract
 {
     public class Options
     {
-        public readonly string usage = @"Usage: mdextract.exe [--path <path>] [--recurse] [--file <file>] [--output <name>]
+        public readonly string usage = @"Usage: mdextract.exe [--path <path>] [--recurse] [--tag <tag>] [--file <file>] [--output <name>]
 
 Options:
   --path <path>, -p <path>    Absolute or relative path to search [default: .\]
   --recurse -r                Search subdirectories
   --file <file>, -f <file>    Filename to match [default: *.md]
+  --tag <tag>, -t <tag>       single tag value to extract 
   --output <name>, -o <name>  Output file
+
   --help -h -?                Show this usage statement
 ";
         public string Path
@@ -27,6 +29,11 @@ Options:
         public string File
         {
             get { return (null == arguments["--file"]) ? null : arguments["--file"].ToString(); }
+        }
+
+        public string Tag
+        {
+            get { return (null == arguments["--tag"]) ? null : arguments["--tag"].ToString(); }
         }
         public bool Use_output
         {

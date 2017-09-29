@@ -275,7 +275,7 @@ namespace Tests
         {
             string f = @"../../abstract-classes3.md";
             var content = File.ReadAllText(f);
-            var result = YMLMeister.ParseYML2(content);
+            var result = YMLMeister.ParseYML2(content, null);
             foreach (var v in result)
             {
                 Debug.WriteLine(v.TagName);

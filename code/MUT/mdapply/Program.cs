@@ -18,7 +18,7 @@ namespace MdApply
             opts.PrintOptions();
 #endif
 
-            var y = new YMLMeister();
+            // var y = new YMLMeister();
             var currentFile = "";
             var currentContent = "";
             var currentBody = "";
@@ -74,7 +74,9 @@ namespace MdApply
                             // Log it?
                             continue;
                         }
-                        currentTagList = new Tags(YMLMeister.ParseYML2(currentContent));
+                        // param 2 only used in mdextract to specify just get one tag from each file.
+                        // For apply we need to get all tags because any unchanged vals need to be written back into file
+                        currentTagList = new Tags(YMLMeister.ParseYML2(currentContent, null)); 
                         currentBody = currentContent.Substring(currentContent.IndexOf("---", 4) + 3);
                     }
 
