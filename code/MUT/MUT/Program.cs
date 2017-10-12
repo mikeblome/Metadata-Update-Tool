@@ -19,11 +19,15 @@ namespace MdExtract
             // Parse each file in the list
             foreach (var filename in fileArray)
             {
+
                 cb.ParseFile(filename);
             }
 
             // Write results to the output file or stdout
             cb.WriteFile(opts.Use_output);
+
+            string LogFileName = "C:\\users\\mblome\\documents\\" + "MUT-log-" + DateTime.Now.ToFileTime() + ".txt";
+            YMLMeister.PrintLog(LogFileName);
 
             Console.WriteLine("Output was successfully written to {0}.", cb.OutputFile);
 

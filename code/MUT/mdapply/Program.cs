@@ -135,6 +135,7 @@ namespace MdApply
             //   close current applies-to file
             // report complete and exit
 
+            Console.WriteLine("Done. Press Enter to close this window.");
             Console.ReadLine();
         }
 

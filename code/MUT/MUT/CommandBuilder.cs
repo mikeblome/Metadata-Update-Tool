@@ -12,6 +12,7 @@ namespace MdExtract
 
         public string OutputFile { get; private set; }
 
+
         public string Tag { get; private set; }
 
         public CommandBuilder(string filename, string tag)
@@ -33,7 +34,11 @@ namespace MdExtract
 
             if ((beg == -1) || (end == -1))
             {
-                Console.WriteLine("CommandBuilder: could not find metadata section in {0}", filename);
+                // only warn if lack of tag might mean something
+                if (!filename.Contains("TOC.md"))
+                {
+                    Console.WriteLine("CommandBuilder: could not find metadata section in {0}", filename);
+                }
                 return;
             }
 
