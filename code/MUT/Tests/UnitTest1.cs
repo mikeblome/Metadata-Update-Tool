@@ -287,9 +287,20 @@ namespace Tests
         }
 
         [TestMethod]
-        public void TestMdApply()
+        public void TestMdExtract()
         {
-        
+            string tagAndVal = @"f1_keywords: ['CAtlBaseModule [ATL]', 'ATLCORE/ATL::CAtlBaseModule', 'ATLCORE/ATL::CAtlBaseModule::CAtlBaseModule', 'ATLCORE/ATL::CAtlBaseModule::AddResourceInstance', 'ATLCORE/ATL::CAtlBaseModule::GetHInstanceAt', 'ATLCORE/ATL::CAtlBaseModule::GetModuleInstance', 'ATLCORE/ATL::CAtlBaseModule::GetResourceInstance', 'ATLCORE/ATL::CAtlBaseModule::RemoveResourceInstance', 'ATLCORE/ATL::CAtlBaseModule::SetResourceInstance', 'ATLCORE/ATL::CAtlBaseModule::m_bInitFailed']";
+            MdExtract.Tag tag = new MdExtract.Tag(tagAndVal);
+            Assert.AreEqual(tag.TagFormatString, "bracket");
+        }
+
+        [TestMethod]
+        public void TestUnique()
+        {
+            string source = "C: \\Users\\mblome\\vcppdocs\\docs\\standard-library\\allocator-base-class.md\tIGNORE\tf1_keywords\t[\"allocators/stdext::allocator_base\", \"allocators/stdext::allocators::allocator_base\", \"allocators/stdext::allocator_base::const_pointer\", \"allocators/stdext::allocator_base::const_reference\", \"allocators/stdext::allocator_base::difference_type\", \"allocators/stdext::allocator_base::pointer\", \"allocators/stdext::allocator_base::reference\", \"allocators/stdext::allocator_base::size_type\", \"allocators/stdext::allocator_base::value_type\", \"allocators/stdext::allocator_base::_Charalloc\", \"allocators/stdext::allocator_base::_Chardealloc\", \"allocators/stdext::allocator_base::address\", \"allocators/stdext::allocator_base::allocate\", \"allocators/stdext::allocator_base::reference\",\"allocators/stdext::allocator_base::construct\", \"allocators/stdext::allocator_base::deallocate\", \"allocators/stdext::allocator_base::destroy\", \"allocators/stdext::allocator_base::reference\",\"allocators/stdext::allocator_base::max_size\"]\tbracket";
+            var elements = source.Split('\t');
+            var tagData = new Tag(elements[0], elements[3], elements[4], true);
+            Assert.IsTrue(tagData.TagValues.Count < elements[2].Length);
         }
     }
 }
