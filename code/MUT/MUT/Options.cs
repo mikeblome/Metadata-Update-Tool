@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace MdExtract
 {
@@ -65,7 +66,9 @@ Options:
 
         public IEnumerable<string> GetFiles()
         {
-            return Directory.EnumerateFiles(this.Path, this.File, this.Recurse);
+            // skip includes folders whose .md files don't contain metadata
+            return Directory.EnumerateFiles(this.Path, this.File, this.Recurse)
+            .Where(f => f.Contains("\\includes\\") == false);
         }
 
         private IDictionary<string, ValueObject> arguments { get; set; }

@@ -53,7 +53,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="abstract-classes-cpp.md" />
-    <None Include="abstract-classes2.md" />
+    <None Include="..\..\..\..\..\..\temp2\abstract-classes2.md">
+      <Link>abstract-classes2.md</Link>
+    </None>
     <None Include="abstract-classes3.md" />
     <None Include="catlmodule-class.md" />
     <None Include="packages.config" />

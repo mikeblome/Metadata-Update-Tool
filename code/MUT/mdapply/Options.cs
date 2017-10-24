@@ -7,11 +7,12 @@ namespace MdApply
 {
     public class Options
     {
-        public readonly string usage = @"Usage: mdapply.exe <file> [--bracket | --dash] [--suffix <ext>]
+        public readonly string usage = @"Usage: mdapply.exe <file> [--bracket | --dash] [--suffix <ext>] [ --unique]
 
 Options:
   --bracket -b                Force multivalue tags into bracketed lists
   --dash -d                   Force multivalue tags into dash lists
+  --unique -u                 Remove duplicate values in multival tags
   --suffix <ext>, -s <ext>    Add suffix extension to files changed
   --help -h -?                Show this usage statement
 ";
@@ -20,6 +21,7 @@ Options:
         public bool OptBracket { get { return arguments["--bracket"].IsTrue; } }
         public bool OptDash { get { return arguments["--dash"].IsTrue; } }
         public string OptSuffix { get { return null == arguments["--suffix"] ? "" : arguments["--suffix"].ToString(); } }
+        public bool OptUnique { get { return arguments["--unique"].IsTrue; } }
 
         public Tag.TagFormatType OptFormat
         {

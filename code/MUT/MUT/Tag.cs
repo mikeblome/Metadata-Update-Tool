@@ -3,6 +3,8 @@
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Linq;
+    using System.Text.RegularExpressions;
 
     public class Tag
     {
@@ -19,10 +21,11 @@
         public enum TagFormatType { single, dash, bracket }
 
 
-#region Properties
+        #region Properties
         public string TagName { get; set; }
         public List<string> TagValues { get; set; }
-        public TagFormatType TagFormat{ get; set; }
+        public TagFormatType TagFormat { get; set; }
+
         public string TagFormatString
         {
             get
@@ -53,9 +56,10 @@
                 }
             }
         }
-#endregion
+        #endregion
 
-        public Tag(string name, List<string> vals, string fmt)
+
+        public Tag(string name, List<string> vals, string fmt, bool removeDupes)
         {
             TagName = name;
             TagValues = vals;
@@ -82,10 +86,10 @@
         /// <param name="name"></param>
         /// <param name="vals"></param>
         /// <param name="fmt"></param>
-        public Tag(string name, string vals, string fmt)
+        public Tag(string name, string vals, string fmt, bool removeDupes)
         {
             TagName = name;
-            TagValues = ValuesFromString(vals);
+            TagValues = ValuesFromString(vals, removeDupes);
             TagFormatString = fmt;
             TagValidate();
         }
@@ -101,11 +105,10 @@
             TagValues = ValuesFromString(tagAndVal.Substring(idx + 1));
         }
 
-        public List<string> ValuesFromString(string valPart)
+        public List<string> ValuesFromString(string valPart, bool removeDupes = false)
         {
             var result = new List<string>();
-            char[] splitset = { '\n' };
-            valPart = valPart.Replace("\r", ""); 
+            valPart = valPart.Replace("\r", "");
             var lines = valPart.Split('\n');
             var firstLine = lines[0].Trim();
             // If the first line of the value part is not empty,
@@ -117,10 +120,22 @@
                     TagFormat = TagFormatType.bracket;
                     string temp = firstLine.TrimStart('[');
                     temp = temp.TrimEnd(']');
-                    var items = temp.Split(',');
-                    foreach (var item in items)
+                    // match all the pairs of quotes inside temp
+                    Regex rgx = new Regex(@""".+?""");
+                    var matches = rgx.Matches(temp);
+                    if (matches.Count == 0)
                     {
-                        result.Add(item.Trim());
+                        Console.WriteLine("{0} has no matches", temp);
+                    }
+                    foreach (Match m in matches)
+                    {
+                        string s = m.Value.Trim();
+                        if (String.IsNullOrEmpty(s))
+                        {
+                            Console.WriteLine("s is empty");
+                        }
+                        result.Add(s);
+                        Console.WriteLine(m.Value.Trim());
                     }
                 }
                 else
@@ -140,10 +155,15 @@
                     {
                         // remove leading dash, trim result
                         var s = lines[i].Substring(lines[i].IndexOf('-') + 1).Trim();
-                        result.Add(s);
+                        result.Add(s);                        
                     }
                 }
             }
+            if (removeDupes)
+            {
+                result = result.Distinct().ToList();
+            }
+            
             return result;
         }
 
@@ -221,7 +241,7 @@
     {
         List<Tag> tagList_;
 
-        public List<Tag> TagList { get { return this.tagList_;  } }
+        public List<Tag> TagList { get { return this.tagList_; } }
 
         public Tags()
         {
@@ -248,7 +268,7 @@
         public int Count { get { return this.tagList_.Count; } }
 
         public bool Changed { get; set; }
-        
+
     }
 
 }

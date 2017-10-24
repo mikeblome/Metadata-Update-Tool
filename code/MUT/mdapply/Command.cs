@@ -16,12 +16,13 @@ namespace MdApply
         public Action action { get; set; }
         public Tag tagData { get; set; }
 
-        public Command(string commandItem)
+        public Command(string commandItem, bool removeDupes)
         {
             var elements = commandItem.Split('\t');
             filename = elements[0];
             action = ToAction(elements[1]);
-            tagData = new Tag(elements[2], elements[3], elements[4]);
+            
+            tagData = new Tag(elements[2], elements[3], elements[4], removeDupes);
         }
 
         public Action ToAction(string input)

@@ -47,7 +47,7 @@ namespace MdApply
                 {
                     try
                     {
-                        command = new Command(trimmedCommand);
+                        command = new Command(trimmedCommand, opts.OptUnique);
                     }
                     catch (Exception e)
                     {
@@ -70,6 +70,11 @@ namespace MdApply
                             currentContent = File.ReadAllText(currentFile);
                         }
                         catch (System.IO.FileNotFoundException)
+                        {
+                            // Log it?
+                            continue;
+                        }
+                        catch (System.IO.DirectoryNotFoundException)
                         {
                             // Log it?
                             continue;
@@ -135,6 +140,7 @@ namespace MdApply
             //   close current applies-to file
             // report complete and exit
 
+            Console.WriteLine("Done. Press Enter to close this window.");
             Console.ReadLine();
         }
 
@@ -340,7 +346,18 @@ namespace MdApply
 
             if (currentTagList.Changed)
             {
-                File.WriteAllText(currentFile + opts.OptSuffix, newContent.ToString());
+                try
+                {
+                    File.WriteAllText(currentFile + opts.OptSuffix, newContent.ToString());
+                }
+                catch (FileNotFoundException)
+                {
+                    Console.WriteLine("Changed but skipping because file not found: {0}", currentFile);
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    Console.WriteLine("Changed but skipping because dir not found: {0}", currentFile);
+                }
             }
         }
     }

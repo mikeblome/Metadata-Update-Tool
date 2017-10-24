@@ -21,6 +21,7 @@ namespace MdExtract
         // the public interface of this class to all instance methods.
         // if we go multithreaded this needs to be changed
         public static string CurrentFile { get; set; }
+        private static StringBuilder logBuilder = new StringBuilder();
 
         #region reading values
         /// <summary>
@@ -66,10 +67,9 @@ namespace MdExtract
             // in the original string. subtract 1 to backtrack over the \n
 
             string textToSearch = filedata.Substring(lineEnd);
-            var m = Regex.Match(textToSearch, @"(^[\w\.-]+:)|(---$)", RegexOptions.Multiline);
-
-            int ret = m.Index;
-            return ret + lineEnd - 1;
+            // find the next tag or the end "---" whichever comes first:
+            var m = Regex.Match(textToSearch, @"(^[\w\._-]+:)|(---)", RegexOptions.Multiline);
+            return m.Index + lineEnd - 1;
         }
 
         /// <summary>
@@ -213,82 +213,6 @@ namespace MdExtract
             return true;
         }
 
-#if NEVER
-        /// <summary>
-        ///     Reads a YML block into a dictionary. For use in mdextract. Compresses multi-line
-        ///     values into a single comma-separated string.
-        /// </summary>
-        /// <param name="yml"></param>
-        /// <returns></returns>
-        public static Dictionary<string, string> ParseYML(string yml)
-        {
-            var d = new Dictionary<string, string>();
-            var lines = yml.Split('\n');
-
-            // Theoretically matches only keys, not values. Needs good tests.
-            Regex rgx = new Regex(@"^[A-Za-z\._]+:");
-
-            // Store current key for cases where we need to iterate over multiline values.
-            // Possibly not needed.
-            string currentKey = "";
-
-            // For use in multiline values. All multiline values get enclosed in brackets, even if there is only
-            // one value present.
-            StringBuilder currentVal = new StringBuilder("{");
-
-            foreach (var v in lines)
-            {
-                if (rgx.IsMatch(v)) // Are we on a new key, or a new value in a multiline value list?
-                {
-                    // we are on a new key, but have we just finshed appending a bunch of multiline vals
-                    // that now need to be associated with the previous key in the dictionary?
-                    if (currentVal.Length > 1)
-                    {
-                        currentVal.Append("}");
-                        // currentKey is what we stored when we started a multiline parse.
-                        // now we're ready to update the value
-                        d[currentKey] = currentVal.ToString().Replace("\"- ", "\", ").Replace("{-", "{");
-
-                        // reset the stringbuilder
-                        currentVal.Clear();
-                        currentVal.Append("{");
-                    }
-
-                    // We are on a key, so split into key - value at the colon
-                    var pair = v.Split(':');
-                    string str;
-                    bool b = d.TryGetValue(pair[0], out str);
-                    if (!b)
-                    {
-                        // add KV pair to dicctionary removing trailing or leading whitespace
-                        d.Add(pair[0].Trim(), pair[1].Trim());
-                        currentKey = pair[0].Trim(); // store in case we are about to parse a multiline value
-                    }
-                }
-                else
-                {
-                    // we are on a multiline value, not a key
-                    int beg = v.IndexOf(" - ");
-                    // hacky sanity check, not very robust
-
-                    if (beg >= 0 && beg < 5)
-                    {
-                        // add this into the string that we are building up
-                        // for currentKey
-                        currentVal.Append(v.Substring(beg).Trim());
-                    }
-                }
-            }
-            // we are  done looping, but if we have a string stored in currentVal
-            // we need to add it to the dictionary. This happens when last key has multiline vals.
-            if (currentVal.Length > 1)
-            {
-                currentVal.Append("}");
-                d[currentKey] = currentVal.ToString().Trim().Replace("\"- ", "\", ").Replace("{-", "{");
-            }
-            return d;
-        }
-#endif
         public static List<Tag> ParseYML2(string filedata, string tagToFind)
         {
             var yml = GetYmlBlock(filedata);
@@ -300,7 +224,7 @@ namespace MdExtract
             // user can specify in command line whether they just want to
             // get the values for one tag across all documents
             List<string> tags;
-            if (tagToFind != null && tagToFind.Length > 0)
+            if (!String.IsNullOrEmpty(tagToFind))
             {
                 tags = GetOneTag(yml, tagToFind);
             }
@@ -361,7 +285,8 @@ namespace MdExtract
             }
             else
             {
-                Console.WriteLine("No {0} tag in {1}", tag, CurrentFile);
+                //Console.WriteLine("No {0} tag in {1}", tag, CurrentFile);
+                logBuilder.AppendLine(String.Format("No {0} tag in {1}", tag, CurrentFile));
             }
             return tags;
         }
@@ -375,105 +300,13 @@ namespace MdExtract
         {
             return filedata.Substring(0, filedata.IndexOf("\n---", 4) + 4);
         }
+
+        public static void PrintLog(string filename)
+        {
+            System.IO.File.WriteAllText(filename, logBuilder.ToString());
+            logBuilder.Clear();
+        }
         #endregion
 
-        #region CRUD operations
-
-#if false
-        public static string DeleteTagAndValue(string file, string tag)
-        {
-            var pre = GetPrefix(file, tag);
-            var suf = GetSuffix(file, tag);
-            StringBuilder sb = new StringBuilder(pre);
-            sb.Append(suf);
-            return sb.ToString();
-        }
-
-        public static string ReplaceSingleValue(string file, string tag, string newVal)
-        {
-            var pre = GetPrefix(file, tag);
-            var suf = GetSuffix(file, tag);
-            var old = GetTagAndValue(file, tag);
-            var parts = old.Split(':');
-            StringBuilder sb = new StringBuilder(pre);
-            sb.Append(parts[0]).Append(": ").Append(newVal)
-                .Append("\r\n").Append(suf);
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// Adds a new tag and value to the metadata section. 
-        /// TODO--Place tag is proper ordered position in the metadatablock.
-        /// </summary>
-        /// <param name="file"></param>
-        /// <param name="tagName"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static string CreateTag(string file, string tagName, string value)
-        {
-            // skip over opening "---" and find the next one
-            int metadataEndPos = file.IndexOf("---", 4);
-
-            string pre = file.Substring(0, metadataEndPos);
-            string suf = file.Substring(metadataEndPos, file.Length - metadataEndPos);
-            StringBuilder sb = new StringBuilder(pre);
-            sb.Append(tagName).Append(": ").Append(value);
-                sb.Append("\r\n").Append(suf);
-            return sb.ToString();
-        }
-
-
-        public static string AddValueToMultiTag(string file, string tagName, string newVal)
-        {
-            var str = GetTagAndValue(file, tagName);
-            var tag = new Tag(str);
-
-            // Do not add a value if it already exists!
-            if (!tag.Values.Contains(newVal))
-            {
-                tag.Values.Add(newVal);
-            }
-            else
-            {
-                //TODO how to issue warnings? Log file?
-                Console.WriteLine("Warning: " + tag.name_ +
-                    "in" + GetValue(file, "title") + "already has a value " + newVal);
-            }
-            tag.Values.Sort();
-            return tag.ToString();
-        }
-
-        /// <summary>
-        ///  Deletes one value from a multi-value tag. This could be done more efficiently
-        ///  by simple string replacement, but keeping this version for now
-        ///  for the sake of consistency and in case the structured approach proves useful for
-        ///  other more complex operations we might want to do later.
-        /// </summary>
-        /// <param name="file"></param>
-        /// <param name="tagName"></param>
-        /// <param name="val"></param>
-        /// <returns>A string that represents the new tag.</returns>
-        public static string DeleteValueFromMultiTag(string file, string tagName, string val)
-        {
-            var str = GetTagAndValue(file, tagName);
-            var tag = new Tag(str);
-
-            // Can't delete a value if it doesn't exist!
-            if (tag.Values.Contains(val))
-            {
-                tag.Values.Remove(val);
-                tag.Values.Sort();
-            }
-            else
-            {
-                //TODO how to issue warnings? Log file?
-                Console.WriteLine("Warning. Nothing to delete: " + tag.name_ +
-                    "in" + GetValue(file, "title") + "does not contain a value " + val);
-            }
-
-            return tag.ToString();
-        }
-#endif
-        #endregion
     }
 }
