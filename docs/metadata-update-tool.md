@@ -2,14 +2,14 @@
 ---
 # Metadata Update Tool  
   
-When you need to update OPS metadata across a number of Markdown files in an OPS content repo, such as we use for docs.microsoft.com content, you can use the Metadata Update Tool. The Metadata Update Tool consists of a couple of command line tools, one that extracts metadata from Markdown files, and another that applies metadata changes.  
+When you need to update or view OPS metadata across a number of Markdown files in an OPS content repo, such as we use for docs.microsoft.com content, you can use the Metadata Update Tool. The Metadata Update Tool consists of two command line tools, one that extracts metadata from Markdown files, and another that applies metadata changes.  An opional PowerShell script can be used to open the output into Excel.
   
 The general process is:  
   
-1. Create a GitHub branch for the metadata work. This keeps the metadata updates separated from other changes.  
+1. Create a GitHub branch in your content repo for the metadata work. This keeps the metadata updates separated from other changes.  
 2. Use mdextract.exe to generate an Excel spreadsheet (a tab-delimited text file) containing the metadata for the files you are working with.  
-3. Use Excel to perform metadata updates.  
-4. Apply those updates using the mdapply.exe tool.  
+3. Use Excel or other word processing program to modify the metadata.  
+4. Pass the modified data file to the mdapply.exe tool to apply the updates.  
 5. Commit the changes and push them to the remote repo.  
 6. Create a pull request from the branch you created to the original branch (e.g., master).  
 7. Scan the diffs to verify that the metadata changes are what you expect.  
@@ -27,15 +27,18 @@ The tool takes options to specify:
   * a specific path to files. Default: `.` (the current working directory, or CWD).  
   * whether to recurse into subdirectories of the path. Default: no recursion.  
   * the name of the output file, if any. Default: write to stdout.  
+  * the name of the tag you are interested in. By default MUT extracts all tags. Use this option to limit output to only the value(s) for a specified tag in each file.
   
 ```cmd  
-Usage: mdextract.exe [--path <path>] [--recurse] [--file <file>] [--output <name>]
+Usage: mdextract.exe [--path <path>] [--recurse] [--tag <tag>] [--file <file>] [--output <name>]
 
 Options:
   --path <path>, -p <path>    Absolute or relative path to search [default: .\]
   --recurse -r                Search subdirectories
   --file <file>, -f <file>    Filename to match [default: *.md]
+  --tag <tag>, -t <tag>       single tag value to extract (omit to extract all values)
   --output <name>, -o <name>  Output file
+
   --help -h -?                Show this usage statement
 ```  
   
@@ -53,9 +56,7 @@ Each row in the output contains the following tab-delimited ordered set of field
   
 `file_path \t action \t metadata_tag \t value-collection  \t format `  
   
-The action field controls the behavior of the mdapply tool. By default, the mdextract tool sets this field to IGNORE, or empty, which specifies no change. Case is not significant in the action field.  
-  
-The action keywords and synonyms, and their meanings, are:  
+The action field controls the behavior of the mdapply tool. By default, the mdextract tool sets this field to IGNORE, or empty, which specifies no change. Case is not significant in the action field. In practice, the OVERWRITE and DELETE actions seem to be the most useful. The other actions tend to perform modifications that you generally do in Excel. The action keywords and synonyms, and their meanings, are:  
   
 |||  
 |---|---|  
@@ -83,11 +84,12 @@ The tool takes options to specify:
   * The name of the reporting output file, if any. Default: write to stdout.  
   
 ```cmd  
-Usage: mdapply.exe <file> [--bracket | --dash] [--suffix <ext>]
+Usage: mdapply.exe <file> [--bracket | --dash] [--suffix <ext>] [ --unique]
 
 Options:
   --bracket -b                Force multivalue tags into bracketed lists
   --dash -d                   Force multivalue tags into dash lists
+  --unique -u                 Remove duplicate values in multival tags
   --suffix <ext>, -s <ext>    Add suffix extension to files changed
   --help -h -?                Show this usage statement
 ```  
