@@ -67,10 +67,9 @@ namespace MdExtract
             // in the original string. subtract 1 to backtrack over the \n
 
             string textToSearch = filedata.Substring(lineEnd);
+            // find the next tag or the end "---" whichever comes first:
             var m = Regex.Match(textToSearch, @"(^[\w\._-]+:)|(---)", RegexOptions.Multiline);
-            var x = m.Value;
-            int ret = m.Index;
-            return ret + lineEnd - 1;
+            return m.Index + lineEnd - 1;
         }
 
         /// <summary>
