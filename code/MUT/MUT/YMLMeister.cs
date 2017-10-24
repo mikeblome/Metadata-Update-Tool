@@ -67,8 +67,8 @@ namespace MdExtract
             // in the original string. subtract 1 to backtrack over the \n
 
             string textToSearch = filedata.Substring(lineEnd);
-            var m = Regex.Match(textToSearch, @"(^[\w\.-]+:)|(---$)", RegexOptions.Multiline);
-
+            var m = Regex.Match(textToSearch, @"(^[\w\._-]+:)|(---)", RegexOptions.Multiline);
+            var x = m.Value;
             int ret = m.Index;
             return ret + lineEnd - 1;
         }

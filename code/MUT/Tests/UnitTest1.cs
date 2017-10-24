@@ -33,18 +33,6 @@ namespace Tests
         }
 
         [TestMethod]
-        public void TestMultilineValue2()
-        {
-            YMLMeister YMLMeister = new YMLMeister();
-            string f = @"../../cmfcbutton-class.md";
-            string content = File.ReadAllText(f);
-            string tag = "helpviewer_keywords";
-            int start = content.IndexOf(tag);
-            var result = YMLMeister.GetTagAndValue(content, start);
-            Assert.IsTrue(result.Length > tag.Length + 8); //for a specific bug now fixed
-        }
-
-        [TestMethod]
         public void TestSinglelineValue()
         {
             string f = @"../../abstract-classes-cpp.md";
@@ -116,9 +104,10 @@ namespace Tests
             string content = File.ReadAllText(f);
             string tag = "translation.priority.ht";
             int startPos = YMLMeister.GetTagStartPos(content, tag);
+            //int lineEnd = content.IndexOf("\n", startPos);
             int endPos = YMLMeister.GetTagValueEndPos(content, startPos);
             string s = content.Substring(startPos, endPos - startPos);
-            Assert.AreEqual(endPos, 326);
+            Assert.AreEqual(s.Length, 197);
         }
 
         [TestMethod]

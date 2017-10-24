@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Text;
     using System.Linq;
+    using System.Text.RegularExpressions;
 
     public class Tag
     {
@@ -107,24 +108,34 @@
         public List<string> ValuesFromString(string valPart, bool removeDupes = false)
         {
             var result = new List<string>();
-            //char[] splitset = { '\n' };
             valPart = valPart.Replace("\r", "");
             var lines = valPart.Split('\n');
             var firstLine = lines[0].Trim();
             // If the first line of the value part is not empty,
             if (firstLine.Length > 0)
             {
-
                 if (firstLine.StartsWith("[") && firstLine.EndsWith("]") && firstLine.Length > 2)
                 {
                     // multi values in a single comma-separated string
                     TagFormat = TagFormatType.bracket;
                     string temp = firstLine.TrimStart('[');
                     temp = temp.TrimEnd(']');
-                    var items = temp.Split(',');
-                    foreach (var item in items)
+                    // match all the pairs of quotes inside temp
+                    Regex rgx = new Regex(@""".+?""");
+                    var matches = rgx.Matches(temp);
+                    if (matches.Count == 0)
                     {
-                        result.Add(item.Trim());
+                        Console.WriteLine("{0} has no matches", temp);
+                    }
+                    foreach (Match m in matches)
+                    {
+                        string s = m.Value.Trim();
+                        if (String.IsNullOrEmpty(s))
+                        {
+                            Console.WriteLine("s is empty");
+                        }
+                        result.Add(s);
+                        Console.WriteLine(m.Value.Trim());
                     }
                 }
                 else
@@ -152,6 +163,7 @@
             {
                 result = result.Distinct().ToList();
             }
+            
             return result;
         }
 
