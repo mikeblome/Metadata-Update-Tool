@@ -14,6 +14,14 @@ namespace MdExtract
 
     public class YMLMeister
     {
+        // NOTE: introducing state here, needed so that we can
+        // record a filename that is missing a specified keyword.
+        // possibly very useful info for various kinds of audits.
+        // Keeping this static for now to avoid having to change 
+        // the public interface of this class to all instance methods.
+        // if we go multithreaded this needs to be changed
+        public static string CurrentFile { get; set; }
+
         #region reading values
         /// <summary>
         ///     Gets the starting position of the specified tag.
@@ -281,7 +289,7 @@ namespace MdExtract
             return d;
         }
 #endif
-        public static List<Tag> ParseYML2(string filedata)
+        public static List<Tag> ParseYML2(string filedata, string tagToFind)
         {
             var yml = GetYmlBlock(filedata);
 #if CURIOUS
@@ -289,7 +297,17 @@ namespace MdExtract
             Console.WriteLine(yml);
             Console.WriteLine("^^^^^^^^^^^^^^^ YML ^^^^^^^^^^^^^^^^^^^");
 #endif
-            var tags = GetAllTags(yml);
+            // user can specify in command line whether they just want to
+            // get the values for one tag across all documents
+            List<string> tags;
+            if (tagToFind != null && tagToFind.Length > 0)
+            {
+                tags = GetOneTag(yml, tagToFind);
+            }
+            else
+            {
+                tags = GetAllTags(yml);
+            }
 #if CURIOUS
             Console.WriteLine("vvvvvvvvvvvvvvv YML reconstituted vvvvvvvvvvvvvvvvvvv");
             foreach (var taggy in tags)
@@ -323,6 +341,28 @@ namespace MdExtract
                 tags.Add(tagVal);
             }
 
+            return tags;
+        }
+
+        /// <summary>
+        /// Gets the tag specified in command line and value in the yml block. we keep the return
+        /// value as List,string> to avoid the caller having to deal with two separate return types 
+        /// </summary>
+        /// <param name="yml">The entire yaml block, including leading and trailing '---' strings.</param>
+        /// <returns></returns>
+        public static List<string> GetOneTag(string yml, string tag)
+        {
+            var tag_pos = yml.IndexOf(tag);
+            List<string> tags = new List<string>();
+            if (tag_pos > 0 && tag_pos < yml.Length)
+            {
+                string tagVal = GetTagAndValue(yml, tag_pos);
+                tags.Add(tagVal);
+            }
+            else
+            {
+                Console.WriteLine("No {0} tag in {1}", tag, CurrentFile);
+            }
             return tags;
         }
 

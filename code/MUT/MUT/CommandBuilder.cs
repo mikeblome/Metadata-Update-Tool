@@ -12,9 +12,12 @@ namespace MdExtract
 
         public string OutputFile { get; private set; }
 
-        public CommandBuilder(string filename)
+        public string Tag { get; private set; }
+
+        public CommandBuilder(string filename, string tag)
         {
             this.OutputFile = filename;
+            this.Tag = tag;
             this.sb = new StringBuilder(Header);
             this.sb.Append(Environment.NewLine);
         }
@@ -35,7 +38,8 @@ namespace MdExtract
             }
 
             // Parse YML into a list of Tag objects
-            var tagList = YMLMeister.ParseYML2(filedata);
+            YMLMeister.CurrentFile = filename;
+            var tagList = YMLMeister.ParseYML2(filedata, this.Tag);
 
             // Append each tag's data to the output string
             foreach (var tag in tagList)
