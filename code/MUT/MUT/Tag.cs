@@ -135,7 +135,9 @@
                             Console.WriteLine("s is empty");
                         }
                         result.Add(s);
+#if CURIOUS
                         Console.WriteLine(m.Value.Trim());
+#endif
                     }
                 }
                 else

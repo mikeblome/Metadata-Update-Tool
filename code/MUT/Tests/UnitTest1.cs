@@ -190,6 +190,7 @@ namespace Tests
         [TestMethod]
         public void TestGetYmlBlock()
         {
+            Assert.Fail();
             string f = @"../../abstract-classes3.md";
             string content = File.ReadAllText(f);
             string yml = YMLMeister.GetYmlBlock(content);
