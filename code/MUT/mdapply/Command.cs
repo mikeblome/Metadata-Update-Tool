@@ -62,7 +62,7 @@ namespace MdApply
                 result = Action.merge_add;
             else
             {
-                Console.WriteLine("Unexpected action {0}, treating as ignore.");
+                Console.WriteLine("Unexpected action '{0}', treating as ignore.", input);
             }
             return result;
         }
