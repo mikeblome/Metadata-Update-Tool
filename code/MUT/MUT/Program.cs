@@ -26,8 +26,12 @@ namespace MdExtract
             // Write results to the output file or stdout
             cb.WriteFile(opts.Use_output);
 
-            string LogFileName = "C:\\users\\mblome\\documents\\" + "MUT-log-" + DateTime.Now.ToFileTime() + ".txt";
+#if DEBUG
+            var mydocs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string fileName = "MUT-log-" + DateTime.Now.ToFileTime() + ".txt";
+            string LogFileName = System.IO.Path.Combine(mydocs, fileName);
             YMLMeister.PrintLog(LogFileName);
+#endif
 
             Console.WriteLine("Output was successfully written to {0}.", cb.OutputFile);
 
