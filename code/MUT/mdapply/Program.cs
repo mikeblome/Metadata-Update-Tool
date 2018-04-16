@@ -44,8 +44,9 @@ namespace MdApply
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine("Unable to read command {0}", trimmedCommand);
-                        Console.WriteLine(e.Message);
+                        string warning = String.Format("Unable to read command {0} in command file {1}", trimmedCommand, opts.ArgFile);
+                        MUT.MutLog.AppendWarning(warning);
+                        MUT.MutLog.AppendError(e.Message);
                         continue;
                     }
 
@@ -62,14 +63,16 @@ namespace MdApply
                         {
                             currentContent = File.ReadAllText(currentFile);
                         }
-                        catch (System.IO.FileNotFoundException)
+                        catch (System.IO.FileNotFoundException e)
                         {
                             // Log it?
+                            MUT.MutLog.AppendError(e.Message);
                             continue;
                         }
-                        catch (System.IO.DirectoryNotFoundException)
+                        catch (System.IO.DirectoryNotFoundException e)
                         {
                             // Log it?
+                            MUT.MutLog.AppendError(e.Message);
                             continue;
                         }
                         // param 2 only used in mdextract to specify just get one tag from each file.
@@ -102,8 +105,8 @@ namespace MdApply
                             MergeValuesOrAddTag(currentTagList, command);
                             break;
                         default:
-                            Console.WriteLine("Ignoring the {0} tag in {1}",
-                                command.TagData.TagName, command.Filename);
+                            MUT.MutLog.AppendInfo(String.Format("Ignoring the {0} tag in {1}",
+                                command.TagData.TagName, command.Filename));
                             break;
                     }
                 }
@@ -133,8 +136,13 @@ namespace MdApply
             //   close current applies-to file
             // report complete and exit
 
-            Console.WriteLine("Done. Press Enter to close this window.");
-            Console.ReadLine();
+            if (opts.Use_log)
+            {
+                MUT.MutLog.WriteFile(opts.Logfile());
+            }
+
+            Console.WriteLine("Mdapply: Complete.");
+            // Console.ReadLine();
         }
 
         private static void AddTagIfNotPresent(Tags currentTagList, Command command)
@@ -143,13 +151,13 @@ namespace MdApply
             {
                 currentTagList.TagList.Add(command.TagData);
                 currentTagList.Changed = true;
-                Console.WriteLine("Adding a {0} tag to {1}",
-                    command.TagData.TagName, command.Filename);
+                MUT.MutLog.AppendInfo(String.Format("Adding a {0} tag to {1}",
+                    command.TagData.TagName, command.Filename));
             }
             else
             {
-                Console.WriteLine("Attempted to add a {0} tag that already exists in {1}",
-                    command.TagData.TagName, command.Filename);
+                MUT.MutLog.AppendInfo(String.Format("Attempted to add a {0} tag that already exists in {1}",
+                    command.TagData.TagName, command.Filename));
             }
         }
 
@@ -160,13 +168,13 @@ namespace MdApply
             {
                 currentTagList.TagList.Remove(tagItem);
                 currentTagList.Changed = true;
-                Console.WriteLine("Removing a {0} tag from {1}",
-                    command.TagData.TagName, command.Filename);
+                MUT.MutLog.AppendInfo(String.Format("Removing a {0} tag from {1}",
+                    command.TagData.TagName, command.Filename));
             }
             else
             {
-                Console.WriteLine("Attempted to delete a {0} tag that doesn't exist in {1}",
-                    command.TagData.TagName, command.Filename);
+                MUT.MutLog.AppendInfo(String.Format("Attempted to delete a {0} tag that doesn't exist in {1}",
+                    command.TagData.TagName, command.Filename));
             }
         }
 
@@ -178,13 +186,13 @@ namespace MdApply
                 tagItem.TagValues = command.TagData.TagValues;
                 tagItem.TagFormat = command.TagData.TagFormat;
                 currentTagList.Changed = true;
-                Console.WriteLine("Overwriting the {0} tag in {1}",
-                    command.TagData.TagName, command.Filename);
+                MUT.MutLog.AppendInfo(String.Format("Overwriting the {0} tag in {1}",
+                    command.TagData.TagName, command.Filename));
             }
             else
             {
-                Console.WriteLine("Attempted to overwrite a {0} tag that doesn't exist in {1}",
-                    command.TagData.TagName, command.Filename);
+                MUT.MutLog.AppendInfo(String.Format("Attempted to overwrite a {0} tag that doesn't exist in {1}",
+                    command.TagData.TagName, command.Filename));
             }
         }
 
@@ -196,15 +204,15 @@ namespace MdApply
                 tagItem.TagValues = command.TagData.TagValues;
                 tagItem.TagFormat = command.TagData.TagFormat;
                 currentTagList.Changed = true; // Might actually be the same.
-                Console.WriteLine("Replacing the {0} tag in {1}",
-                    command.TagData.TagName, command.Filename);
+                MUT.MutLog.AppendInfo(String.Format("Replacing the {0} tag in {1}",
+                    command.TagData.TagName, command.Filename));
             }
             else
             {
                 currentTagList.TagList.Add(command.TagData);
                 currentTagList.Changed = true;
-                Console.WriteLine("Inserting a {0} tag in {1}",
-                    command.TagData.TagName, command.Filename);
+                MUT.MutLog.AppendInfo(String.Format("Inserting a {0} tag in {1}",
+                    command.TagData.TagName, command.Filename));
             }
         }
 
@@ -226,15 +234,15 @@ namespace MdApply
                         currentTagList.Changed = true;
                     }
                 }
-                Console.WriteLine("Merged to {0} tag in {1}",
-                    command.TagData.TagName, command.Filename);
+                MUT.MutLog.AppendInfo(String.Format("Merged to {0} tag in {1}",
+                    command.TagData.TagName, command.Filename));
             }
             else
             {
                 currentTagList.TagList.Add(command.TagData);
                 currentTagList.Changed = true;
-                Console.WriteLine("Inserting a merge {0} tag in {1}",
-                    command.TagData.TagName, command.Filename);
+                MUT.MutLog.AppendInfo(String.Format("Inserting a merge {0} tag in {1}",
+                    command.TagData.TagName, command.Filename));
             }
         }
 
@@ -256,13 +264,13 @@ namespace MdApply
                         currentTagList.Changed = true;
                     }
                 }
-                Console.WriteLine("Merged into {0} tag in {1}",
-                    command.TagData.TagName, command.Filename);
+                MUT.MutLog.AppendInfo(String.Format("Merged into {0} tag in {1}",
+                    command.TagData.TagName, command.Filename));
             }
             else
             {
-                Console.WriteLine("Attempted to merge missing {0} tag in {1}",
-                    command.TagData.TagName, command.Filename);
+                MUT.MutLog.AppendInfo(String.Format("Attempted to merge missing {0} tag in {1}",
+                    command.TagData.TagName, command.Filename));
             }
         }
 
@@ -292,20 +300,20 @@ namespace MdApply
                 if (newTagValues.Count > 0)
                 {
                     tagItem.TagValues = newTagValues;
-                    Console.WriteLine("Excising from {0} tag in {1}",
-                        command.TagData.TagName, command.Filename);
+                    MUT.MutLog.AppendInfo(String.Format("Excising from {0} tag in {1}",
+                        command.TagData.TagName, command.Filename));
                 }
                 else
                 {
                     currentTagList.TagList.Remove(tagItem);
-                    Console.WriteLine("Excised entire {0} tag from {1}",
-                         command.TagData.TagName, command.Filename);
+                    MUT.MutLog.AppendInfo(String.Format("Excised entire {0} tag from {1}",
+                         command.TagData.TagName, command.Filename));
                 }
             }
             else
             {
-                Console.WriteLine("Attempted to excise from missing {0} tag in {1}",
-                    command.TagData.TagName, command.Filename);
+                MUT.MutLog.AppendInfo(String.Format("Attempted to excise from missing {0} tag in {1}",
+                    command.TagData.TagName, command.Filename));
             }
         }
 
@@ -345,11 +353,11 @@ namespace MdApply
                 }
                 catch (FileNotFoundException)
                 {
-                    Console.WriteLine("Changed but skipping because file not found: {0}", currentFile);
+                    MUT.MutLog.AppendInfo(String.Format("Changed but skipping because file not found: {0}", currentFile));
                 }
                 catch (DirectoryNotFoundException)
                 {
-                    Console.WriteLine("Changed but skipping because folder not found: {0}", currentFile);
+                    MUT.MutLog.AppendInfo(String.Format("Changed but skipping because folder not found: {0}", currentFile));
                 }
             }
         }
