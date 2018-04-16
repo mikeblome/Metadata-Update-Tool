@@ -49,7 +49,7 @@ namespace MdApply
                         continue;
                     }
 
-                    if (!String.IsNullOrEmpty(currentFile) && currentFile != command.filename)
+                    if (!String.IsNullOrEmpty(currentFile) && currentFile != command.Filename)
                     {
                         WriteCurrentFile(opts, currentFile, currentBody, currentTagList);
                     }
