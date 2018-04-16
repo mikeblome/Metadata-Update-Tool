@@ -349,7 +349,20 @@ namespace MdApply
             {
                 try
                 {
+                    if (String.IsNullOrEmpty(opts.OptSuffix))
+                    {
+                        if (!opts.OptNobackup)
+                        {
+                            File.Copy(currentFile, currentFile + ".backup");
+                            MUT.MutLog.AppendInfo(String.Format("Made backup of modified file {0}", currentFile));
+                        }
+                        else
+                        {
+                            MUT.MutLog.AppendInfo(String.Format("Skipped backup of modified file {0}", currentFile));
+                        }
+                    }
                     File.WriteAllText(currentFile + opts.OptSuffix, newContent.ToString());
+                    MUT.MutLog.AppendInfo(String.Format("Wrote modified file {0}", currentFile + opts.OptSuffix));
                 }
                 catch (FileNotFoundException)
                 {

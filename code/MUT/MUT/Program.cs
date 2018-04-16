@@ -31,7 +31,7 @@ namespace MdExtract
                 MUT.MutLog.WriteFile(opts.Logfile());
             }
 
-            Console.WriteLine("MdExtract: Output was successfully written to {0}.", opts.Use_output ? cb.OutputFile : "stdout");
+            Console.WriteLine("MdExtract: Output was successfully written to {0}.", opts.Use_output ? cb.OutputFile : "console");
         }
 
         // ParseXML
