@@ -49,7 +49,7 @@ namespace MdApply
                         continue;
                     }
 
-                    if (currentFile != "" && currentFile != command.Filename)
+                    if (!String.IsNullOrEmpty(currentFile) && currentFile != command.filename)
                     {
                         WriteCurrentFile(opts, currentFile, currentBody, currentTagList);
                     }
@@ -109,7 +109,7 @@ namespace MdApply
                 }
             }
 
-            if (command != null && currentFile != "")
+            if (command != null && !String.IsNullOrEmpty(currentFile))
             {
                 // We're done, write the file out, if there's anything to write.
                 WriteCurrentFile(opts, currentFile, currentBody, currentTagList);
