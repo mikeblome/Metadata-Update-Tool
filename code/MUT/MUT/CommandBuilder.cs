@@ -35,7 +35,7 @@ namespace MdExtract
             if ((beg == -1) || (end == -1))
             {
                 // only warn if lack of tag might mean something
-                if (!filename.Contains("TOC.md"))
+                if (!filename.ToLower().Contains("toc.md"))
                 {
                     Console.WriteLine("CommandBuilder: could not find metadata section in {0}", filename);
                 }

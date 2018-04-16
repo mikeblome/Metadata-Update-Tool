@@ -8,13 +8,14 @@ namespace MdExtract
 {
     public class Options
     {
-        public readonly string usage = @"Usage: mdextract.exe [--path <path>] [--recurse] [--tag <tag>] [--file <file>] [--output <name>]
+        public readonly string usage = @"Usage: mdextract.exe [--path <path>] [--recurse] [--tag <tag>] [--log <log>] [--file <file>] [--output <name>]
 
 Options:
   --path <path>, -p <path>    Absolute or relative path to search [default: .\]
   --recurse -r                Search subdirectories
   --file <file>, -f <file>    Filename to match [default: *.md]
-  --tag <tag>, -t <tag>       single tag value to extract 
+  --tag <tag>, -t <tag>       Single tag value to extract
+  --log <log>, -l <log>       Log data filename to write
   --output <name>, -o <name>  Output file
 
   --help -h -?                Show this usage statement
@@ -36,6 +37,20 @@ Options:
         {
             get { return (null == arguments["--tag"]) ? null : arguments["--tag"].ToString(); }
         }
+
+        public bool Use_log
+        {
+            get
+            {
+                return arguments.ContainsKey("--log") && !String.IsNullOrEmpty(Logfile());
+            }
+        }
+
+        public string Logfile()
+        {
+            return (null == arguments["--log"]) ? null : arguments["--log"].ToString();
+        }
+
         public bool Use_output
         {
             get
@@ -51,7 +66,15 @@ Options:
 
         public Options(string[] args)
         {
-            arguments = new Docopt().Apply(usage, args, version: "mdextract 0.1", exit: false);
+            try
+            {
+                arguments = new Docopt().Apply(usage, args, version: "mdextract 0.1", exit: false);
+            }
+            catch (DocoptNet.DocoptInputErrorException e)
+            {
+                Console.WriteLine(e.Message);
+                System.Environment.Exit(1);
+            }
         }
 
         public void PrintOptions()

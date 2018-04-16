@@ -26,14 +26,12 @@ namespace MdExtract
             // Write results to the output file or stdout
             cb.WriteFile(opts.Use_output);
 
-            string LogFileName = "C:\\users\\mblome\\documents\\" + "MUT-log-" + DateTime.Now.ToFileTime() + ".txt";
-            YMLMeister.PrintLog(LogFileName);
+            if (opts.Use_log)
+            {
+                MUT.MutLog.WriteFile(opts.Logfile());
+            }
 
-            Console.WriteLine("Output was successfully written to {0}.", cb.OutputFile);
-
-            // debug trap so you can see it at work; remove from production
-            Console.WriteLine("Press any key to continue... ... ...");
-            Console.ReadLine();
+            Console.WriteLine("MdExtract: Output was successfully written to {0}.", opts.Use_output ? cb.OutputFile : "stdout");
         }
 
         // ParseXML

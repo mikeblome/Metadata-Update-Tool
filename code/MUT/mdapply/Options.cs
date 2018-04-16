@@ -41,16 +41,25 @@ Options:
 
         public Options(string[] args)
         {
-            arguments = new Docopt().Apply(usage, args, version: "mdapply 0.1", exit: true);
+            try
+            {
+                arguments = new Docopt().Apply(usage, args, version: "mdapply 0.1", exit: true);
+                LogOptions();
+            }
+            catch (DocoptNet.DocoptInputErrorException e)
+            {
+                Console.WriteLine(e.Message);
+                System.Environment.Exit(1);
+            }
         }
 
-        public void PrintOptions()
+        public void LogOptions()
         {
             // debug output
-            Console.WriteLine("Recognized options:");
+            MUT.MutLog.AppendInfo("Recognized options:");
             foreach (var argument in arguments)
             {
-                Console.WriteLine("{0} = {1}", argument.Key, argument.Value);
+                MUT.MutLog.AppendInfo(String.Format("    {0} = {1}", argument.Key, argument.Value));
             }
         }
 

@@ -12,13 +12,6 @@ namespace MdApply
         {
             // Load options
             var opts = new Options(args);
-
-            // For debugging, remove from production
-#if DEBUG
-            opts.PrintOptions();
-#endif
-
-            // var y = new YMLMeister();
             var currentFile = "";
             var currentContent = "";
             var currentBody = "";
@@ -56,14 +49,14 @@ namespace MdApply
                         continue;
                     }
 
-                    if (currentFile != "" && currentFile != command.filename)
+                    if (currentFile != "" && currentFile != command.Filename)
                     {
                         WriteCurrentFile(opts, currentFile, currentBody, currentTagList);
                     }
 
-                    if (currentFile != command.filename)
+                    if (currentFile != command.Filename)
                     {
-                        currentFile = command.filename;
+                        currentFile = command.Filename;
 
                         try
                         {
@@ -85,7 +78,7 @@ namespace MdApply
                         currentBody = currentContent.Substring(currentContent.IndexOf("---", 4) + 3);
                     }
 
-                    switch (command.action)
+                    switch (command.TagAction)
                     {
                         case Command.Action.create:
                             AddTagIfNotPresent(currentTagList, command);
@@ -110,7 +103,7 @@ namespace MdApply
                             break;
                         default:
                             Console.WriteLine("Ignoring the {0} tag in {1}",
-                                command.tagData.TagName, command.filename);
+                                command.TagData.TagName, command.Filename);
                             break;
                     }
                 }
@@ -146,86 +139,86 @@ namespace MdApply
 
         private static void AddTagIfNotPresent(Tags currentTagList, Command command)
         {
-            if (null == currentTagList.TryGetTag(command.tagData.TagName))
+            if (null == currentTagList.TryGetTag(command.TagData.TagName))
             {
-                currentTagList.TagList.Add(command.tagData);
+                currentTagList.TagList.Add(command.TagData);
                 currentTagList.Changed = true;
                 Console.WriteLine("Adding a {0} tag to {1}",
-                    command.tagData.TagName, command.filename);
+                    command.TagData.TagName, command.Filename);
             }
             else
             {
                 Console.WriteLine("Attempted to add a {0} tag that already exists in {1}",
-                    command.tagData.TagName, command.filename);
+                    command.TagData.TagName, command.Filename);
             }
         }
 
         private static void DeleteTag(Tags currentTagList, Command command)
         {
-            var tagItem = currentTagList.TryGetTag(command.tagData.TagName);
+            var tagItem = currentTagList.TryGetTag(command.TagData.TagName);
             if (null != tagItem)
             {
                 currentTagList.TagList.Remove(tagItem);
                 currentTagList.Changed = true;
                 Console.WriteLine("Removing a {0} tag from {1}",
-                    command.tagData.TagName, command.filename);
+                    command.TagData.TagName, command.Filename);
             }
             else
             {
                 Console.WriteLine("Attempted to delete a {0} tag that doesn't exist in {1}",
-                    command.tagData.TagName, command.filename);
+                    command.TagData.TagName, command.Filename);
             }
         }
 
         private static void OverwriteIfTagExists(Tags currentTagList, Command command)
         {
-            var tagItem = currentTagList.TryGetTag(command.tagData.TagName);
+            var tagItem = currentTagList.TryGetTag(command.TagData.TagName);
             if (null != tagItem)
             {
-                tagItem.TagValues = command.tagData.TagValues;
-                tagItem.TagFormat = command.tagData.TagFormat;
+                tagItem.TagValues = command.TagData.TagValues;
+                tagItem.TagFormat = command.TagData.TagFormat;
                 currentTagList.Changed = true;
                 Console.WriteLine("Overwriting the {0} tag in {1}",
-                    command.tagData.TagName, command.filename);
+                    command.TagData.TagName, command.Filename);
             }
             else
             {
                 Console.WriteLine("Attempted to overwrite a {0} tag that doesn't exist in {1}",
-                    command.tagData.TagName, command.filename);
+                    command.TagData.TagName, command.Filename);
             }
         }
 
         private static void OverwriteOrAddTag(Tags currentTagList, Command command)
         {
-            var tagItem = currentTagList.TryGetTag(command.tagData.TagName);
+            var tagItem = currentTagList.TryGetTag(command.TagData.TagName);
             if (null != tagItem)
             {
-                tagItem.TagValues = command.tagData.TagValues;
-                tagItem.TagFormat = command.tagData.TagFormat;
+                tagItem.TagValues = command.TagData.TagValues;
+                tagItem.TagFormat = command.TagData.TagFormat;
                 currentTagList.Changed = true; // Might actually be the same.
                 Console.WriteLine("Replacing the {0} tag in {1}",
-                    command.tagData.TagName, command.filename);
+                    command.TagData.TagName, command.Filename);
             }
             else
             {
-                currentTagList.TagList.Add(command.tagData);
+                currentTagList.TagList.Add(command.TagData);
                 currentTagList.Changed = true;
                 Console.WriteLine("Inserting a {0} tag in {1}",
-                    command.tagData.TagName, command.filename);
+                    command.TagData.TagName, command.Filename);
             }
         }
 
         private static void MergeValuesOrAddTag(Tags currentTagList, Command command)
         {
-            var tagItem = currentTagList.TryGetTag(command.tagData.TagName);
+            var tagItem = currentTagList.TryGetTag(command.TagData.TagName);
             if (null != tagItem)
             {
-                if (tagItem.TagFormat != command.tagData.TagFormat)
+                if (tagItem.TagFormat != command.TagData.TagFormat)
                 {
-                    tagItem.TagFormat = command.tagData.TagFormat;
+                    tagItem.TagFormat = command.TagData.TagFormat;
                     currentTagList.Changed = true;
                 }
-                foreach (var val in command.tagData.TagValues)
+                foreach (var val in command.TagData.TagValues)
                 {
                     if (!tagItem.TagValues.Contains(val))
                     {
@@ -234,28 +227,28 @@ namespace MdApply
                     }
                 }
                 Console.WriteLine("Merged to {0} tag in {1}",
-                    command.tagData.TagName, command.filename);
+                    command.TagData.TagName, command.Filename);
             }
             else
             {
-                currentTagList.TagList.Add(command.tagData);
+                currentTagList.TagList.Add(command.TagData);
                 currentTagList.Changed = true;
                 Console.WriteLine("Inserting a merge {0} tag in {1}",
-                    command.tagData.TagName, command.filename);
+                    command.TagData.TagName, command.Filename);
             }
         }
 
         private static void MergeValuesIfTagExists(Tags currentTagList, Command command)
         {
-            var tagItem = currentTagList.TryGetTag(command.tagData.TagName);
+            var tagItem = currentTagList.TryGetTag(command.TagData.TagName);
             if (null != tagItem)
             {
-                if (tagItem.TagFormat != command.tagData.TagFormat)
+                if (tagItem.TagFormat != command.TagData.TagFormat)
                 {
-                    tagItem.TagFormat = command.tagData.TagFormat;
+                    tagItem.TagFormat = command.TagData.TagFormat;
                     currentTagList.Changed = true;
                 }
-                foreach (var val in command.tagData.TagValues)
+                foreach (var val in command.TagData.TagValues)
                 {
                     if (!tagItem.TagValues.Contains(val))
                     {
@@ -264,29 +257,29 @@ namespace MdApply
                     }
                 }
                 Console.WriteLine("Merged into {0} tag in {1}",
-                    command.tagData.TagName, command.filename);
+                    command.TagData.TagName, command.Filename);
             }
             else
             {
                 Console.WriteLine("Attempted to merge missing {0} tag in {1}",
-                    command.tagData.TagName, command.filename);
+                    command.TagData.TagName, command.Filename);
             }
         }
 
         private static void ExciseValues(Tags currentTagList, Command command)
         {
-            var tagItem = currentTagList.TryGetTag(command.tagData.TagName);
+            var tagItem = currentTagList.TryGetTag(command.TagData.TagName);
             if (null != tagItem)
             {
                 var newTagValues = new List<string>();
-                if (tagItem.TagFormat != command.tagData.TagFormat)
+                if (tagItem.TagFormat != command.TagData.TagFormat)
                 {
-                    tagItem.TagFormat = command.tagData.TagFormat;
+                    tagItem.TagFormat = command.TagData.TagFormat;
                     currentTagList.Changed = true;
                 }
                 foreach (var val in tagItem.TagValues)
                 {
-                    if (!command.tagData.TagValues.Contains(val))
+                    if (!command.TagData.TagValues.Contains(val))
                     {
                         newTagValues.Add(val);
                     }
@@ -300,19 +293,19 @@ namespace MdApply
                 {
                     tagItem.TagValues = newTagValues;
                     Console.WriteLine("Excising from {0} tag in {1}",
-                        command.tagData.TagName, command.filename);
+                        command.TagData.TagName, command.Filename);
                 }
                 else
                 {
                     currentTagList.TagList.Remove(tagItem);
                     Console.WriteLine("Excised entire {0} tag from {1}",
-                         command.tagData.TagName, command.filename);
+                         command.TagData.TagName, command.Filename);
                 }
             }
             else
             {
                 Console.WriteLine("Attempted to excise from missing {0} tag in {1}",
-                    command.tagData.TagName, command.filename);
+                    command.TagData.TagName, command.Filename);
             }
         }
 
@@ -356,7 +349,7 @@ namespace MdApply
                 }
                 catch (DirectoryNotFoundException)
                 {
-                    Console.WriteLine("Changed but skipping because dir not found: {0}", currentFile);
+                    Console.WriteLine("Changed but skipping because folder not found: {0}", currentFile);
                 }
             }
         }

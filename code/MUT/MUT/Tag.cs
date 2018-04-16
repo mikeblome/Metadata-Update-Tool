@@ -125,17 +125,17 @@
                     var matches = rgx.Matches(temp);
                     if (matches.Count == 0)
                     {
-                        Console.WriteLine("{0} has no matches", temp);
+                        MUT.MutLog.AppendInfo(String.Format("    {0} has no matches", temp));
                     }
                     foreach (Match m in matches)
                     {
                         string s = m.Value.Trim();
                         if (String.IsNullOrEmpty(s))
                         {
-                            Console.WriteLine("s is empty");
+                            MUT.MutLog.AppendInfo(String.Format("    trimmed value is empty"));
                         }
                         result.Add(s);
-                        Console.WriteLine(m.Value.Trim());
+                        MUT.MutLog.AppendInfo(String.Format("    trimmed value is {0}", m.Value.Trim()));
                     }
                 }
                 else

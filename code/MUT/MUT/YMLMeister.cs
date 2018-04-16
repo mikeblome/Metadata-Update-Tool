@@ -11,6 +11,7 @@ namespace MdExtract
     using System;
     using System.Collections.Generic;
     using System.Text.RegularExpressions;
+    using MUT;
 
     public class YMLMeister
     {
@@ -21,7 +22,6 @@ namespace MdExtract
         // the public interface of this class to all instance methods.
         // if we go multithreaded this needs to be changed
         public static string CurrentFile { get; set; }
-        private static StringBuilder logBuilder = new StringBuilder();
 
         #region reading values
         /// <summary>
@@ -170,7 +170,7 @@ namespace MdExtract
 
             if (!line.Contains(":"))
             {
-                Console.WriteLine("expected a : in metadata line");
+                Console.WriteLine("Error: expected a : in {0} metadata line, file {1}", tag, CurrentFile);
                 throw new Exception(); // TODO decide on error policy
             }
 
@@ -217,9 +217,9 @@ namespace MdExtract
         {
             var yml = GetYmlBlock(filedata);
 #if CURIOUS
-            Console.WriteLine("vvvvvvvvvvvvvvv YML vvvvvvvvvvvvvvvvvvv");
-            Console.WriteLine(yml);
-            Console.WriteLine("^^^^^^^^^^^^^^^ YML ^^^^^^^^^^^^^^^^^^^");
+            MUT.MutLog.AppendInfo("vvvvvvvvvvvvvvv YML vvvvvvvvvvvvvvvvvvv");
+            MUT.MutLog.AppendInfo(yml);
+            MUT.MutLog.AppendInfo("^^^^^^^^^^^^^^^ YML ^^^^^^^^^^^^^^^^^^^");
 #endif
             // user can specify in command line whether they just want to
             // get the values for one tag across all documents
@@ -233,13 +233,13 @@ namespace MdExtract
                 tags = GetAllTags(yml);
             }
 #if CURIOUS
-            Console.WriteLine("vvvvvvvvvvvvvvv YML reconstituted vvvvvvvvvvvvvvvvvvv");
+            MUT.MutLog.AppendInfo("vvvvvvvvvvvvvvv YML reconstituted vvvvvvvvvvvvvvvvvvv");
             foreach (var taggy in tags)
             {
-                Console.Write(taggy.ToString());
+               MUT.MutLog.AppendInfo(taggy.ToString());
             }
-            Console.WriteLine(yml);
-            Console.WriteLine("^^^^^^^^^^^^^^^ YML reconstituted ^^^^^^^^^^^^^^^^^^^");
+            MUT.MutLog.AppendInfo(yml);
+            MUT.MutLog.AppendInfo("^^^^^^^^^^^^^^^ YML reconstituted ^^^^^^^^^^^^^^^^^^^");
 #endif
 
             var tagList = new List<Tag>();
@@ -285,8 +285,7 @@ namespace MdExtract
             }
             else
             {
-                //Console.WriteLine("No {0} tag in {1}", tag, CurrentFile);
-                logBuilder.AppendLine(String.Format("No {0} tag in {1}", tag, CurrentFile));
+                MUT.MutLog.AppendInfo(String.Format("No {0} tag in {1}", tag, CurrentFile));
             }
             return tags;
         }
@@ -301,11 +300,6 @@ namespace MdExtract
             return filedata.Substring(0, filedata.IndexOf("\n---", 4) + 4);
         }
 
-        public static void PrintLog(string filename)
-        {
-            System.IO.File.WriteAllText(filename, logBuilder.ToString());
-            logBuilder.Clear();
-        }
         #endregion
 
     }
