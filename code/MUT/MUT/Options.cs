@@ -68,7 +68,7 @@ Options:
         {
             try
             {
-                arguments = new Docopt().Apply(usage, args, version: "mdextract 0.1", exit: false);
+                arguments = new Docopt().Apply(usage, args, version: "mdextract 0.1", exit: true);
             }
             catch (DocoptNet.DocoptInputErrorException e)
             {

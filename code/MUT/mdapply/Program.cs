@@ -347,14 +347,40 @@ namespace MdApply
 
             if (currentTagList.Changed)
             {
+                bool dont_bother = false;
                 try
                 {
                     if (String.IsNullOrEmpty(opts.OptSuffix))
                     {
                         if (!opts.OptNobackup)
                         {
-                            File.Copy(currentFile, currentFile + ".backup");
-                            MUT.MutLog.AppendInfo(String.Format("Made backup of modified file {0}", currentFile));
+                            if (File.Exists(currentFile + ".backup"))
+                            {
+                                try
+                                {
+                                    // Try to delete the existing backup first
+                                    File.Delete(currentFile + ".backup");
+                                    MUT.MutLog.AppendInfo(String.Format("Deleted existing backup of modified file {0}", currentFile));
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine("Couldn't delete existing backup of {0}, because {1}", currentFile, e.Message);
+                                    dont_bother = true;
+                                }
+                            }
+                            if (!dont_bother)
+                            {
+                                try
+                                {
+                                    File.Copy(currentFile, currentFile + ".backup");
+                                    MUT.MutLog.AppendInfo(String.Format("Made backup of modified file {0}", currentFile));
+
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine("Couldn't create backup of {0}, because {1}", currentFile, e.Message);
+                                }
+                            }
                         }
                         else
                         {

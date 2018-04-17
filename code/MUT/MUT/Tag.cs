@@ -220,7 +220,15 @@
                     break;
                 case TagFormatType.single:
                 default:
-                    sb.Append(TagValues[0]);
+                    if (TagValues.Count > 0)
+                    {
+                        sb.Append(TagValues[0]);
+                    }
+                    else
+                    {
+                        MUT.MutLog.AppendInfo("        Inserting \"\" for missing TagValues[0]");
+                        sb.Append("\"\"");
+                    }
                     break;
             }
             return sb.ToString();
