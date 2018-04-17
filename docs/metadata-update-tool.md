@@ -30,13 +30,14 @@ The tool takes options to specify:
   * the name of the tag you are interested in. By default MUT extracts all tags. Use this option to limit output to only the value(s) for a specified tag in each file.
 
 ```cmd
-Usage: mdextract.exe [--path <path>] [--recurse] [--tag <tag>] [--file <file>] [--output <name>]
+Usage: mdextract.exe [--path <path>] [--recurse] [--tag <tag>] [--log <log>] [--file <file>] [--output <name>]
 
 Options:
   --path <path>, -p <path>    Absolute or relative path to search [default: .\]
   --recurse -r                Search subdirectories
   --file <file>, -f <file>    Filename to match [default: *.md]
-  --tag <tag>, -t <tag>       single tag value to extract (omit to extract all values)
+  --tag <tag>, -t <tag>       Single tag value to extract
+  --log <log>, -l <log>       Log data filename to write
   --output <name>, -o <name>  Output file
 
   --help -h -?                Show this usage statement
@@ -78,22 +79,27 @@ Mdapply.exe is a command-line tool that reads in a tab-formatted text command fi
 
 The tab-delimited format of the mdapply command file is easy to open and edit, or even to generate from scratch, in Excel as a spreadsheet. Excel can then save the file as tab-delimited text. You can also create your own command files that describe the metadata changes you want to make in an ordinary text editor.
 
+By default, mdapply creates a backup of any file that is overwritten by the tool, with a .backup extension.
+
 ### mdapply options
 
 The tool takes options to specify:
 
 * Whether to force write of all collections as bracketed or dash delimited. Default: follow format field.
 * A suffix to apply to written files, instead of overwriting the existing files. Default: overwrite existing.
-* The name of the reporting output file, if any. Default: write to stdout.
+* Whether to skip backups of overwritten files
+* The name of the reporting output file, if any. Default: write errors to stdout.
 
 ```cmd
-Usage: mdapply.exe <file> [--bracket | --dash] [--suffix <ext>] [ --unique]
+Usage: mdapply.exe <file> [--bracket | --dash] [--nobackup] [--suffix <ext>] [--log <log>] [ --unique]
 
 Options:
   --bracket -b                Force multivalue tags into bracketed lists
   --dash -d                   Force multivalue tags into dash lists
   --unique -u                 Remove duplicate values in multival tags
-  --suffix <ext>, -s <ext>    Add suffix extension to files changed
+  --suffix <ext>, -s <ext>    Add suffix ext to files changed
+  --nobackup, -n              Do not create backups of changed files
+  --log <log>, -l <log>       Log info to log file
   --help -h -?                Show this usage statement
 ```
 
@@ -172,6 +178,12 @@ The **--unique** option is for metadata cleanup. It identifies duplicate values 
 The **--suffix** option lets you create updated files without overwriting the existing files. It adds the specified suffix to the file name when generating output.
 
 For example, if the original file name is original.md, and you've specified the option `--suffix .new` to mdapply, then the output is written to original.md.new instead of overwriting original.md.
+
+#### --nobackup
+
+The **--nobackup** option lets you overwrite existing files without creating a backup. By default, mdapply creates a backup (with a .backup extension) of any file that is overwritten (for example, if you do not specify a suffix option).
+
+For example, if the original file name is original.md, and you've specified the option `--nobackup` to mdapply, then the output is written to original.md and no backup is made at original.md.backup.
 
 ### mdapply operation
 
